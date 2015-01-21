@@ -66,6 +66,8 @@ get_screenshot_name(const char *ext)
 int
 system_screenshot(void)
 {
+	return 0;
+	/*
     SDL_Surface *image;
     char *bmpname;
     int ret;
@@ -94,10 +96,12 @@ system_screenshot(void)
     free(bmpname);
 
     return ret;
+	*/
 }
 #else /* HAVE LIBPNG */
-#include <png.h>
+//#include <png.h>
 
+/*
 static void
 converter(png_structp ptr, png_row_infop row_info, png_bytep row)
 {
@@ -109,19 +113,21 @@ converter(png_structp ptr, png_row_infop row_info, png_bytep row)
     outp = out;
     inp = (_u16 *)row;
     for (i=0; i<SCREEN_WIDTH; i++) {
-	*outp++ = (_u8)CONV4TO8(*inp & 0x000f);		/* red */
-	*outp++ = (_u8)CONV4TO8((*inp & 0x00f0)>>4);	/* green */
-	*outp++ = (_u8)CONV4TO8((*inp & 0x0f00)>>8);	/* blue */
+	*outp++ = (_u8)CONV4TO8(*inp & 0x000f);		/* red * /
+	*outp++ = (_u8)CONV4TO8((*inp & 0x00f0)>>4);	/* green * /
+	*outp++ = (_u8)CONV4TO8((*inp & 0x0f00)>>8);	/* blue * /
 	inp++;
     }
 
     memcpy(row, out, sizeof(out));
     return;
 }
+*/
     
 int
 system_screenshot(void)
 {
+	/*
     char *pngname;
     int ret, i;
     png_structp png_ptr = NULL;
@@ -132,17 +138,17 @@ system_screenshot(void)
     FILE *fp;
 
     ret = 0;
-    /* get file name */
+    /* get file name * /
     if ((pngname=get_screenshot_name(".png")) == NULL)
 	return -1;
 
-    /* open file for writing */
+    /* open file for writing * /
     if ((fp=fopen(pngname, "wb")) == NULL) {
 	ret = -1;
 	goto end;
     }
 
-    /* init png structures */
+    /* init png structures * /
     if ((png_ptr=png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
 					 NULL, NULL)) == NULL) {
 	ret = -1;
@@ -163,7 +169,7 @@ system_screenshot(void)
     png_set_sBIT(png_ptr, info_ptr, &sig_bit);
     png_set_shift(png_ptr, &sig_bit);
     png_set_write_user_transform_fn(png_ptr, converter);
-    /* write image to file */
+    /* write image to file * /
     row_pointer = (png_bytep)cfb;
     for (i=0; i<SCREEN_HEIGHT; i++) {
 	row_pointers[i] = row_pointer;
@@ -177,7 +183,7 @@ system_screenshot(void)
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
  closeend:
-    /* close file and cleanup */
+    /* close file and cleanup * /
     if (ret == 0)
 	ret = fclose(fp);
     else
@@ -186,5 +192,8 @@ system_screenshot(void)
  end:
     free(pngname);
     return ret;
+
+	*/
+	return 0;
 }
 #endif /* HAVE_LIBPNG */

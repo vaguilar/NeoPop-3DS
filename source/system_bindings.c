@@ -29,6 +29,7 @@ struct binding {
 };
 
 static struct binding builtin[] = {
+#ifndef _3DS
     { NPKS_KEY(NPKS_SH_NONE, SDLK_ESCAPE),  NPEV_GUI_QUIT },
     { NPKS_KEY(NPKS_SH_CTRL, 'q'),          NPEV_GUI_QUIT },
     { NPKS_KEY(NPKS_SH_NONE, '1'),          NPEV_GUI_MAGNIFY_1 },
@@ -72,11 +73,10 @@ static struct binding builtin[] = {
     { NPKS_JOY_BUTTON(0, 1),                NPEV_JOY_BUTTON_B },
 
     { -1, NPEV_NONE }
+#endif
 };
 
 enum neopop_event bindings[NPKS_SIZE];
-
-
 
 void
 system_bindings_init(void)

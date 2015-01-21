@@ -49,11 +49,53 @@ static void set_fullscreen(int);
 static void set_mute(int);
 static void set_paused(int);
 
-
-
 void
 system_input_update(void)
 {
+#ifdef _3DS
+
+	/* FIXME probably a better way to do this */
+
+	hidScanInput();
+
+	if(keysHeld() & KEY_UP) { 
+		handle_event(NPEV_JOY_UP, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_UP, NPKS_UP);
+	}
+
+	if(keysHeld() & KEY_DOWN) { 
+		handle_event(NPEV_JOY_DOWN, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_DOWN, NPKS_UP);
+	}
+
+	if(keysHeld() & KEY_RIGHT) { 
+		handle_event(NPEV_JOY_RIGHT, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_RIGHT, NPKS_UP);
+	}
+
+	if(keysHeld() & KEY_LEFT) { 
+		handle_event(NPEV_JOY_LEFT, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_LEFT, NPKS_UP);
+	}
+
+	if(keysHeld() & KEY_A) { 
+		handle_event(NPEV_JOY_BUTTON_A, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_BUTTON_A, NPKS_UP);
+	}
+
+	if(keysHeld() & KEY_B) { 
+		handle_event(NPEV_JOY_BUTTON_B, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_BUTTON_B, NPKS_UP);
+	}
+
+#else
+
     SDL_Event evt;
 
     while(SDL_PollEvent(&evt)) {
@@ -184,13 +226,13 @@ system_input_update(void)
 	    break;
 	}
     }
+#endif
 }
-
-
 
 static void
 emit_key(int k, int type)
 {
+#ifndef _3DS
 #ifdef KEY_DEBUG
     printf("key %s (%d) %s == %s\n",
 	   system_npks_name(k), k,
@@ -198,9 +240,8 @@ emit_key(int k, int type)
 	   system_npev_name(bindings[k]));
 #endif
     handle_event(bindings[k], type);
+#endif
 }
-
-
 
 static void
 handle_event(enum neopop_event ev, int type)
@@ -334,16 +375,12 @@ handle_event(enum neopop_event ev, int type)
     }
 }
 
-
-
 static void
 set_fullscreen(int val)
 {
     system_graphics_fullscreen(val);
     system_osd("fullscreen %s", fs_mode ? "on" : "off");
 }
-
-
 
 static void
 set_mute(int val)
@@ -356,8 +393,6 @@ set_mute(int val)
     mute = val;
     system_osd("sound %s", mute ? "off" : "on");
 }
-
-
 
 static void
 set_paused(int val)

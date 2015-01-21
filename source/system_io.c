@@ -35,6 +35,11 @@ int state_slot;
 static BOOL
 read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 {
+
+#ifndef _3DS
+
+	printf("READING FILE: %s\n", filename);
+
     FILE *fp;
     _u32 got;
 
@@ -59,6 +64,40 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 	return FALSE;
 
     return TRUE;
+
+#else
+
+    u64 size;
+    u32 bytesRead;
+    Handle fileHandle;
+    //setup SDMC archive
+    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+    //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
+    FS_path filePath=FS_makePath(PATH_CHAR, filename);
+
+    //open file
+    Result ret=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+    //check for errors : exit if there is one
+    if(ret)goto exit;
+
+    //get file size
+    ret=FSFILE_GetSize(fileHandle, &size);
+    if(ret)goto exit;
+
+    //read contents !
+    ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, buffer, size);
+    if(ret || size!=bytesRead)goto exit;
+
+    //close the file because we like being nice and tidy
+    ret=FSFILE_Close(fileHandle);
+    if(ret)goto exit;
+
+	return TRUE;
+
+	exit:
+		return FALSE;
+
+#endif
 }
 
 static BOOL
@@ -66,6 +105,8 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 {
     FILE *fp;
     _u32 written;
+
+	printf("WRITING TO FILE: %s\n", filename);
 
     if ((fp=fopen(filename, "wb")) == NULL)
 	return FALSE;
@@ -188,10 +229,18 @@ system_io_flash_read(_u8* buffer, _u32 len)
     char *fn;
     int ret;
 
+	printf("READING %d bytes to flash %s\n", len, flash_dir);
+
     if ((fn=system_make_file_name(flash_dir, ".ngf", FALSE)) == NULL)
 	return FALSE;
+
+	printf("system_make_file_name success\n");
+
     ret = read_file_to_buffer(fn, buffer, len);
     free(fn);
+
+	printf("READ: 0x%.*x\n", len, buffer);
+
     return ret;
 }
 
@@ -201,8 +250,13 @@ system_io_flash_write(_u8* buffer, _u32 len)
     char *fn;
     int ret;
 
+	printf("WRITING %d bytes to flash %s\n", len, flash_dir);
+
     if ((fn=system_make_file_name(flash_dir, ".ngf", TRUE)) == NULL)
 	return FALSE;
+
+	printf("system_make_file_name success\n");
+
     ret = write_file_from_buffer(fn, buffer, len);
     free(fn);
     return ret;

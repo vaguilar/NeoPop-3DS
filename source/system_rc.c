@@ -26,6 +26,14 @@
 
 #include "NeoPop-SDL.h"
 
+#define SDLK_LAST 8
+
+#ifdef _3DS
+char* SDL_GetKeyName(int k) {
+	return NULL;
+}
+#endif
+
 static const char *bool_name[] = {
     "no", "yes",
     "off", "on"

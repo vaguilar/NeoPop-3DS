@@ -108,7 +108,7 @@ system_VBL(void)
     }
 
     if (have_sound) {
-	timersub(&current_time, &throttle_last, &time_diff);
+	//timersub(&current_time, &throttle_last, &time_diff);
 	throttle_diff = (time_diff.tv_sec*1000000 + time_diff.tv_usec);
 
 	if (time_spent == 0)
@@ -134,16 +134,16 @@ system_VBL(void)
 	    throttle_last.tv_usec -= 1000000;
 	    throttle_last.tv_sec++;
 	}
-	timersub(&throttle_last, &current_time, &time_diff);
+	//timersub(&throttle_last, &current_time, &time_diff);
 	throttle_diff = (time_diff.tv_sec*1000000 + time_diff.tv_usec);
 	
 	if (throttle_diff > 0) {
-	    SDL_Delay(throttle_diff/1000);
+	    //SDL_Delay(throttle_diff/1000);
 	}
 	else if (throttle_diff < -2*throttle_rate) {
 	    time_diff.tv_sec = 0;
 	    time_diff.tv_usec = -2*throttle_rate;
-	    timersub(&current_time, &time_diff, &throttle_last);
+	    //timersub(&current_time, &time_diff, &throttle_last);
 	}
     }
 
@@ -159,7 +159,7 @@ system_VBL(void)
 	else
 	    (void)snprintf(title, sizeof(title), PROGRAM_NAME " %dfps",
 			   frame_counter);
-	SDL_WM_SetCaption(title, NULL);
+	//SDL_WM_SetCaption(title, NULL);
 
 	frame_counter = 0;
     }
@@ -167,12 +167,64 @@ system_VBL(void)
     return;
 }
 
+#ifdef _3DS
+void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, u32 color)
+{
+    const float max = 255;
+    u16 fbWidth, fbHeight;
+    u8* fbAdr = gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
+
+    union{ u32 color; struct{ u8 a, b, g, r; } rgba; } rgbaColor;
+    rgbaColor.color = color;
+
+    int i;
+    for (i = 0; i<fbWidth*fbHeight; i++)
+    {
+        u8 rgb_prev[] = { *(fbAdr), *(fbAdr + 1), *(fbAdr + 2) };
+        *(fbAdr++) = (u8)(rgbaColor.rgba.b * (rgbaColor.rgba.a / max) + rgb_prev[0] * ((max - rgbaColor.rgba.a) / max));
+        *(fbAdr++) = (u8)(rgbaColor.rgba.g * (rgbaColor.rgba.a / max) + rgb_prev[1] * ((max - rgbaColor.rgba.a) / max));
+        *(fbAdr++) = (u8)(rgbaColor.rgba.r * (rgbaColor.rgba.a / max) + rgb_prev[2] * ((max - rgbaColor.rgba.a) / max));
+    }
+
+	gfxFlushBuffers();
+	gfxSwapBuffers();
+	gspWaitForVBlank();
+}
+
+/* TODO poor mans debugging, implement actual debugging methods */
+void yes() {
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x007700ff);
+}
+
+void no() {
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x770000ff);
+}
+
+void blue() {
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x000077ff);
+}
+#endif
+
+#ifndef _3DS
+int aptMainLoop() {
+	return 1;
+}
+#endif
+
 int
 main(int argc, char *argv[])
 {
     char *start_state;
     int ch;
     int i;
+
+#ifdef _3DS
+	srvInit(); // Needed
+	aptInit(); // Needed
+	gfxInit(); // Init graphic stuff
+	fsInit();
+	hidInit(NULL);
+#endif
 
     prg = argv[0];
     start_state = NULL;
@@ -208,16 +260,19 @@ main(int argc, char *argv[])
     /* colour to display OSD in */
     osd_colour = 0xfff;
 
+#ifndef _3DS
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK) < 0) {
        fprintf(stderr, "cannot initialize SDL: %s\n", SDL_GetError());
        exit(1);
     }
     atexit(SDL_Quit);
+#endif
 
     system_bindings_init();
     system_rc_read();
 
+#ifndef _3DS
     while ((ch=getopt(argc, argv, "C:cef:ghjl:MmP:R:SsVy:")) != -1) {
 	switch (ch) {
 	case 'C':
@@ -300,6 +355,7 @@ main(int argc, char *argv[])
 	    usage(1);
 	}
     }
+	#endif
 
     argc -= optind;
     argv += optind;
@@ -310,18 +366,20 @@ main(int argc, char *argv[])
 	exit(1);
     }
 
+#ifndef _3DS
     if (SDL_NumJoysticks() > 0) {
 	SDL_JoystickOpen(0);
 	SDL_JoystickEventState(SDL_ENABLE);
     }
+#endif
 
     if (system_graphics_init() == FALSE) {
-	fprintf(stderr, "cannot create window: %s\n", SDL_GetError());
+	//fprintf(stderr, "cannot create window: %s\n", SDL_GetError());
 	exit(1);
     }
 
     if (mute == FALSE && system_sound_init() == FALSE) {
-	fprintf(stderr, "cannot turn on sound: %s\n", SDL_GetError());
+	//fprintf(stderr, "cannot turn on sound: %s\n", SDL_GetError());
 	mute = TRUE;
     }
     have_sound = !mute;
@@ -339,29 +397,58 @@ main(int argc, char *argv[])
      */
     throttle_rate = 1000000/NGP_FPS;
 
-    if (argc > 0) {
+    /**** if (argc > 0) {
 	if (system_rom_load(argv[0]) == FALSE)
 	    exit(1);
     }
     else {
 	fprintf(stderr, "no ROM loaded\n");
     }
+	****/
+
+/* TODO not hardcode rom filename */
+#ifdef _3DS
+	char rom_name[] = "/ASTEROID.NGP";
+#else
+	char rom_name[] = "~/ASTEROID.NGP";
+#endif
+
+	if (system_rom_load(rom_name) == FALSE) {
+		// Deinit everything before the app process get's terminated
+#ifdef _3DS
+		gfxExit();
+		aptExit();
+		srvExit();
+		fsExit();
+		hidExit();
+#endif
+		return 0;
+	}
 
     reset();
-    SDL_PauseAudio(0);
+    //SDL_PauseAudio(0);
     if (start_state != NULL)
 	state_restore(start_state);
 
     gettimeofday(&throttle_last, NULL);
+
     do {
 	if (paused == 0)
 	    emulate();
 	else
 	    system_VBL();
-    } while (do_exit == 0);
+    } while (aptMainLoop() && do_exit == 0);
 
     system_rom_unload();
     system_sound_shutdown();
+
+#ifdef _3DS
+		gfxExit();
+		aptExit();
+		srvExit();
+		fsExit();
+		hidExit();
+#endif
 
     return 0;
 }

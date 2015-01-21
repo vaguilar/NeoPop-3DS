@@ -45,11 +45,42 @@ rom_load(char *filename)
     int l, err;
 #endif
 
+#ifdef _3DS
+
+    u64 size;
+    u32 bytesRead;
+    Handle fileHandle;
+
+    //setup SDMC archive
+    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+    //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
+    FS_path filePath=FS_makePath(PATH_CHAR, filename);
+
+    //open file
+    Result ret=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+    //check for errors : exit if there is one
+    if(ret)goto exit;
+
+    //get file size
+    ret=FSFILE_GetSize(fileHandle, &size);
+    if(ret)goto exit;
+
+	//set file size in struct
+	st.st_size = size;
+
+    //close the file because we like being nice and tidy
+    ret=FSFILE_Close(fileHandle);
+    if(ret)goto exit;
+
+#else
+
     if (stat(filename, &st) == -1) {
 	system_message("%s `%s': %s", system_get_string(IDS_EROMFIND),
 		       filename, strerror(errno));
 	return FALSE;
     }
+
+#endif
 
 #ifdef HAVE_LIBZ
     if ((z=unzOpen(filename)) != NULL) {
@@ -105,6 +136,7 @@ rom_load(char *filename)
     if (system_io_rom_read(filename, rom.data, rom.length))
 	return TRUE;
 
+	exit:
     system_message("%s `%s': %s", system_get_string(IDS_EROMOPEN),
 		   filename, strerror(errno));
     free(rom.data);
@@ -120,7 +152,7 @@ system_rom_changed(void)
     (void)snprintf(title, sizeof(title), PROGRAM_NAME " - %s", rom.name);
 
     /* set window caption */
-    SDL_WM_SetCaption(title, NULL);
+    //SDL_WM_SetCaption(title, NULL);
 }
     
 BOOL
@@ -158,5 +190,5 @@ system_rom_unload(void)
     rom_unload();
 
     /* reset window caption */
-    SDL_WM_SetCaption(PROGRAM_NAME, NULL);
+    //SDL_WM_SetCaption(PROGRAM_NAME, NULL);
 }

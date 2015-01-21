@@ -38,7 +38,7 @@ static int spf;		/* samples per frame */
 static int bpf;		/* bytes per frame */
 static int dac_bpf;	/* bytes of DAC data per frame */
 
-static SDL_AudioCVT acvt;
+//static SDL_AudioCVT acvt;
 static Uint8 silence_value;
 
 static char *sound_buffer;
@@ -47,7 +47,7 @@ static int sound_frame_read;		/* read position */
 static int sound_frame_read_old;	/* read position at last VBL */
 static int sound_frame_write;		/* write position */
 
-static SDL_sem *rsem, *wsem;
+//static SDL_sem *rsem, *wsem;
 
 void
 system_sound_chipreset(void)
@@ -60,6 +60,8 @@ system_sound_chipreset(void)
 BOOL
 system_sound_init(void)
 {
+	return 0;
+	/*
     SDL_AudioSpec desired;
 
     spf = samplerate/NGP_FPS;
@@ -86,7 +88,7 @@ system_sound_init(void)
 	return FALSE;
     }
 
-    /* build conversion structure for DAC sound data */
+    /* build conversion structure for DAC sound data * /
     if (SDL_BuildAudioCVT(&acvt, AUDIO_U8, 1, 8000, DEFAULT_FORMAT,
 			  DEFAULT_CHANNELS, samplerate) == -1) {
 	fprintf(stderr, "Cannot build converter: %s\n", SDL_GetError());
@@ -117,11 +119,13 @@ system_sound_init(void)
     sound_frame_write = 0;
 
     return TRUE;
+	*/
 }
 
 void
 system_sound_shutdown(void)
 {
+	/*
     SDL_SemPost(rsem);
     SDL_CloseAudio();
     SDL_DestroySemaphore(rsem);
@@ -130,6 +134,7 @@ system_sound_shutdown(void)
     sound_buffer = NULL;
 
     return;
+	*/
 }
 
 void
@@ -146,6 +151,7 @@ system_sound_silence(void)
 void
 system_sound_callback(void *userdata, Uint8 *stream, int len)
 {
+	/*
     if (sound_buffer == NULL)
 	return;
 
@@ -153,30 +159,32 @@ system_sound_callback(void *userdata, Uint8 *stream, int len)
     memcpy(stream, sound_buffer+sound_frame_read, len);
     sound_frame_read = FRAME_INC(sound_frame_read);
     SDL_SemPost(wsem);
+	*/
 }
 
 void
 system_sound_update(int nframes)
 {
+	/*
     int i;
     int consumed;
 
-    /* SDL_LockAudio(); */
+    /* SDL_LockAudio(); * /
 
-    /* number of unread frames  */
+    /* number of unread frames  * /
     i = FRAME_DIFF(sound_frame_write, sound_frame_read);
-    /* number of frames read since last call */
+    /* number of frames read since last call * /
     consumed = FRAME_DIFF(sound_frame_read, sound_frame_read_old);
     sound_frame_read_old = sound_frame_read;
 
-    /* SDL_UnlockAudio(); */
+    /* SDL_UnlockAudio(); * /
 
     for (; i<nframes; i++) {
 	if (mute || paused)
 	    memset(sound_buffer+sound_frame_write, silence_value, bpf);
 	else {
 	    dac_update(dac_data, dac_bpf);
-	    /* convert to standard format */
+	    /* convert to standard format * /
 	    acvt.buf = dac_data;
 	    acvt.len = dac_bpf;
 	    if (SDL_ConvertAudio(&acvt) == -1) {
@@ -185,10 +193,10 @@ system_sound_update(int nframes)
 		return;
 	    }
 	    
-	    /* get sound data */
+	    /* get sound data * /
 	    sound_update((_u16 *)(sound_buffer+sound_frame_write), bpf);
 	    
-	    /* mix both streams into one */
+	    /* mix both streams into one * /
 	    SDL_MixAudio(sound_buffer+sound_frame_write,
 			 dac_data, bpf, SDL_MIX_MAXVOLUME);
 	}
@@ -196,7 +204,7 @@ system_sound_update(int nframes)
 	sound_frame_write = FRAME_INC(sound_frame_write);
 	if (sound_frame_write == sound_frame_read) {
 	    fprintf(stderr, "your machine is much too slow.\n");
-	    /* XXX: handle this */
+	    /* XXX: handle this * /
 	    exit(1);
 	}
 
@@ -209,4 +217,5 @@ system_sound_update(int nframes)
     }
     else
 	SDL_SemWait(wsem);
+	*/
 }

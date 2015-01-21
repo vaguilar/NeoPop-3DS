@@ -35,6 +35,7 @@ int use_yuv;
 /* use YUV overlay even if not hardware accelerated */
 int use_software_yuv;
 
+#ifndef _3DS
 /* display structure */
 static SDL_Surface *disp = NULL;
 
@@ -44,6 +45,7 @@ static SDL_Overlay *over = NULL;
 static SDL_Rect orect_fs, orect_win;
 /* use YUV in current setting */
 static int use_yuv_now;
+#endif
 
 /* displayed graphics is how big compared to original size? 1: normal size,
  * 2: double size, 3: triple size */
@@ -70,6 +72,10 @@ static Uint16 magfb[SCREEN_WIDTH*SCREEN_HEIGHT*9];
 BOOL
 system_graphics_init(void)
 {
+#ifdef _3DS
+
+#else
+
     int i;
     int y, u, v;
     int r, g, b;
@@ -79,7 +85,7 @@ system_graphics_init(void)
 	double mul;
 
 	orect_fs.x = orect_fs.y = orect_win.x = orect_win.y = 0;
-	
+
 	if ((mode=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE)) == NULL) {
 	    fprintf(stderr, "cannot get list of modes");
 	    orect_fs.w = SCREEN_WIDTH;
@@ -116,7 +122,7 @@ system_graphics_init(void)
 	    use_yuv = use_yuv_now = 0;
 	}
     }
-	    
+
     for (i=0; i<16*16*16; i++) {
 	r = CONV4TO8(i&0xf);
 	g = CONV4TO8((i>>4)&0xf);
@@ -130,15 +136,15 @@ system_graphics_init(void)
 	u = 128 + ((r - b) >> 2);
 	v = 128 + ((-r + 2 * g - b) >> 3);
 	hqx_lookup[i] = (y<<16)|(u<<8)|v;
-	
+
 	/* real YUV */
 	if (use_yuv) {
 	    /* see http://www.fourcc.org/fccyvrgb.php#mikes_answer */
-	    
+
 	    y = (((r * 16982) + (g * 32828) + (b * 6475)) >> 16) + 16;
 	    u = ((r * 28656) - (g * 23995) - (b * 4660) + 8355840) >> 16;
 	    v = (-(r * 9671) - (g * 18985) + (b * 28656) + 8355840) >> 16;
-	    
+
 #ifdef LSB_FIRST
 	    yuv_lookup[i] = (u<<24)|(y<<16)|(v<<8)|y;
 #else
@@ -156,12 +162,15 @@ system_graphics_init(void)
     SDL_Flip(disp);
 
     need_redraw = FALSE;
+#endif
+
     return TRUE;
 }
 
 void
 system_graphics_fullscreen(int mode)
 {
+#ifndef _3DS
     if (mode == -1)
 	mode = !fs_mode;
     if (mode == fs_mode)
@@ -173,11 +182,16 @@ system_graphics_fullscreen(int mode)
 	    SDL_ShowCursor(1-fs_mode);
     if (use_yuv >= YUV_FULLSCREEN)
 	system_graphics_screen_init(graphics_mag_actual);
+#endif
 }
 
 static BOOL
 system_graphics_screen_init(int mfactor)
 {
+#ifdef _3DS
+
+#else
+
     SDL_Surface *disp_new;
     int flags, w, h;
 
@@ -214,6 +228,8 @@ system_graphics_screen_init(int mfactor)
 
     if (SDL_ShowCursor(-1) == fs_mode)
 	    SDL_ShowCursor(1-fs_mode);
+
+#endif
 
     return TRUE;
 }
@@ -268,6 +284,38 @@ system_graphics_update(void)
     Uint32 *lookup;
     int x, y, pitch, w, h;
     _u16 *fbp;
+	_u16 fbWidth, fbHeight;
+	_u16* buffer = cfb;
+
+#ifdef _3DS
+
+    _u8* fbAdr = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &fbWidth, &fbHeight);
+
+	int z = 0;
+    for (y=0; y<SCREEN_HEIGHT; y++) {
+		for (x=0; x<SCREEN_WIDTH; x++) {
+
+			int i = *(buffer++);
+			int re = CONV4TO8(i&0xf);
+			int gr = CONV4TO8((i>>4)&0xf);
+			int bl = CONV4TO8(i>>8);
+
+			int xx = x + 118 + 1, yy = y + 44 + 1;
+			_u32 v = ((xx * 240) - yy) * 3;
+			fbAdr[v++] = bl;
+			fbAdr[v++] = gr;
+			fbAdr[v++] = re;
+		}
+    }
+
+	//gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x000000ff);
+	//u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+
+	gfxFlushBuffers();
+	gfxSwapBuffers();
+	gspWaitForVBlank();
+
+#else
 
     /* handle screen size changes */
     if (graphics_mag_req != graphics_mag_actual) {
@@ -353,4 +401,5 @@ system_graphics_update(void)
 	}
 	SDL_Flip(disp);
     }
+#endif
 }

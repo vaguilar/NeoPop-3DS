@@ -22,7 +22,10 @@
 */
 
 #include "neopop.h"
-#include <SDL.h>
+
+#define Uint8 unsigned int
+#define Uint16 unsigned int
+#define Uint32 unsigned int
 
 /* one per line, please */
 enum neopop_event {
@@ -108,7 +111,7 @@ enum npks_shift {
 /* size and layout of bindings array */
 
 #define NPKS_KEY_BASE		0
-#define NPKS_KEY_SIZE		SDLK_LAST
+#define NPKS_KEY_SIZE		128
 #define NPKS_JOY_BASE		(NPKS_KEY_BASE+NPKS_NKEY*NPKS_KEY_SIZE)
 #define NPKS_NJOY		1
 #define NPKS_JOY_NAXIS		7
