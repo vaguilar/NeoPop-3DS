@@ -1,3 +1,8 @@
 *.o
 *.sw?
+
+*.3dsx
+*.elf
+*.smdh
+
 build/*
