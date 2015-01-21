@@ -120,6 +120,13 @@
 #include <string.h>
 #include <stdarg.h>
 
+#ifdef _3DS
+#include <3ds.h>
+#include "text.h"
+#else
+#include <SDL.h>
+#endif
+
 //=============================================================================
 
 
