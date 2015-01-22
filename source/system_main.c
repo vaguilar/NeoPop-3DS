@@ -203,6 +203,94 @@ void no() {
 void blue() {
 	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x000077ff);
 }
+
+void clear_top() {
+	gfxFillColor(GFX_TOP, GFX_LEFT, 0x000000ff);
+}
+
+/* TODO redo this whole menu correctly */
+void rom_menu(char *dir, char *rom_filename) {
+
+	int current_rom = 0;
+	FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+	FSUSER_OpenArchive(NULL, &sdmcArchive);
+
+	Handle dir_handle;
+	FS_path dir_path = (FS_path){PATH_CHAR, strlen(dir) + 1, dir};
+	FS_dirent entry;
+	int nfiles = 0;
+
+	FSUSER_OpenDirectory(NULL, &dir_handle, sdmcArchive, dir_path);
+
+	u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+
+	while (1) {
+
+		u32 nread = 0;
+		FSDIR_Read(dir_handle, &nread, 1, &entry);
+		if (!nread) break;
+
+		int c;
+		for(c = 0; entry.name[c]; c++)
+			rom_list[nfiles][c] = entry.name[c];
+
+		rom_list[nfiles][c] = 0;
+
+		nfiles++;
+
+	}
+
+	FSDIR_Close(dir_handle);
+
+	int keys, oldKeys = 0;
+
+	while (1) {
+
+		hidScanInput();
+		keys = keysHeld();
+
+		if(keys != oldKeys && keys & KEY_UP) {
+			current_rom = (current_rom - 1) % nfiles;
+		}
+
+		if(keys != oldKeys && keys & KEY_DOWN) {
+			current_rom = (current_rom + 1) % nfiles;
+		}
+
+		if(keys != oldKeys && keys & KEY_A) {
+			break;
+		}
+
+		int frame_width, frame_height, i;
+		u8* bufAdr = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
+
+		/* clear screen */
+		for (i = 0; i < frame_width * frame_height * 3; i++)
+			bufAdr[i] = 0;
+
+		drawString(bufAdr, "ROM LIST", 10, 10, 0xffffffff);
+
+		for(i = 0; rom_list[i][0] && i < MAX_ROMS; i++) {
+			if (current_rom == i) {
+				drawString(bufAdr, ">", 12, ((i + 2) * 16), 0xcccccccc);
+			}
+
+			drawString(bufAdr, rom_list[i], 32, ((i + 2) * 16), 0xcccccccc);
+		}
+
+		oldKeys = keysHeld();
+
+		gfxFlushBuffers();
+		gfxSwapBuffers();
+		gspWaitForVBlank();
+	}
+
+	strcpy(rom_filename, rom_list[current_rom]);
+
+	// Clear both buffers
+	clear_top();
+	clear_top();
+}
 #endif
 
 #ifndef _3DS
@@ -395,25 +483,17 @@ main(int argc, char *argv[])
      * of complete frames that should be shown per second.
      * In this case, both are constants;
      */
-    throttle_rate = 1000000/NGP_FPS;
+    //throttle_rate = 1000000/NGP_FPS;
+    throttle_rate = 0;
 
-    /**** if (argc > 0) {
-	if (system_rom_load(argv[0]) == FALSE)
-	    exit(1);
-    }
-    else {
-	fprintf(stderr, "no ROM loaded\n");
-    }
-	****/
+	char rom_filename[256] = "neogeo/";
+	rom_menu("/neogeo", &rom_filename[7]);
 
-/* TODO not hardcode rom filename */
-#ifdef _3DS
-	char rom_name[] = "/ASTEROID.NGP";
-#else
-	char rom_name[] = "~/ASTEROID.NGP";
-#endif
+	if (strlen(rom_filename) == 0) {
+		exit(0);
+	}
 
-	if (system_rom_load(rom_name) == FALSE) {
+	if (system_rom_load(rom_filename) == FALSE) {
 		// Deinit everything before the app process get's terminated
 #ifdef _3DS
 		gfxExit();

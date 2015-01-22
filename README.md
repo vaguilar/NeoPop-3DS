@@ -9,7 +9,7 @@ To compile, you'll need to devkitARM:
 To run, you'll need a 3DS that can run homebrew or use an emulator:
 	https://github.com/citra-emu/citra
 
-The project is a work in progress. Currently missing are things like a ROM selection GUI (rom is hardcoded in source/system_main.c), sound support, save states, etc.
+The project is a work in progress. Currently missing are things like a proper ROM selection GUI, sound, save states, etc. Roms go in a folder called "neogeo" in the root of your SD card.
 
 You can find the NeoPop-SDL homepage at
 	http://www.nih.at/NeoPop-SDL/

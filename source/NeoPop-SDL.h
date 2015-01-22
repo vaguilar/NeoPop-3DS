@@ -232,3 +232,7 @@ extern const char *comms_names[];
 extern const char *npev_names[];
 extern const char *nprc_names[];
 extern const char *yuv_names[];
+
+#define MAX_FILENAME_LENGTH 64
+#define MAX_ROMS 16
+char rom_list[MAX_ROMS][MAX_FILENAME_LENGTH];

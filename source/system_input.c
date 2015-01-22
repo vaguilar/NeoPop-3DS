@@ -58,37 +58,37 @@ system_input_update(void)
 
 	hidScanInput();
 
-	if(keysHeld() & KEY_UP) { 
+	if(keysHeld() & KEY_UP) {
 		handle_event(NPEV_JOY_UP, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_UP, NPKS_UP);
 	}
 
-	if(keysHeld() & KEY_DOWN) { 
+	if(keysHeld() & KEY_DOWN) {
 		handle_event(NPEV_JOY_DOWN, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_DOWN, NPKS_UP);
 	}
 
-	if(keysHeld() & KEY_RIGHT) { 
+	if(keysHeld() & KEY_RIGHT) {
 		handle_event(NPEV_JOY_RIGHT, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_RIGHT, NPKS_UP);
 	}
 
-	if(keysHeld() & KEY_LEFT) { 
+	if(keysHeld() & KEY_LEFT) {
 		handle_event(NPEV_JOY_LEFT, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_LEFT, NPKS_UP);
 	}
 
-	if(keysHeld() & KEY_A) { 
+	if(keysHeld() & KEY_A) {
 		handle_event(NPEV_JOY_BUTTON_A, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_BUTTON_A, NPKS_UP);
 	}
 
-	if(keysHeld() & KEY_B) { 
+	if(keysHeld() & KEY_B) {
 		handle_event(NPEV_JOY_BUTTON_B, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_BUTTON_B, NPKS_UP);

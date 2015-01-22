@@ -1,15 +1,16 @@
 #include <3ds.h>
 #include "font.h"
 
-void drawPixel(u8* buffer, int x, int y)
+void drawPixel(u8* buffer, int x, int y, int color)
 {
-	u32 v = ((-y-1)+(x)*240) * 3;
-	buffer[v++] = 0xff;
-	buffer[v++] = 0xff;
-	buffer[v++] = 0xff;
+	int xx = x + 1, yy = y + 1;
+	u32 v = ((xx * 240) - yy) * 3;
+	buffer[v++] = (color >>  8) & 0xff; // B
+	buffer[v++] = (color >> 16) & 0xff; // G
+	buffer[v++] = (color >> 24) & 0xff; // R
 }
 
-void drawChar(u8* buffer, int x, int y, int w, int h, int ascii)
+void drawChar(u8* buffer, int x, int y, int w, int h, int ascii, int color)
 {
 	if (ascii < 32 || ascii > 126) return;
 
@@ -22,17 +23,17 @@ void drawChar(u8* buffer, int x, int y, int w, int h, int ascii)
 		{
 			if (mask & bitmap[h - j - 1])
 			{
-				drawPixel(buffer, x+i, y+j);
+				drawPixel(buffer, x+i, y+j, color);
 			}
 		}
 	}
 }
 
-void drawString(u8* buffer, char* str, int x, int y, int char_w, int char_h)
+void drawString(u8* buffer, char* str, int x, int y, int color)
 {
 	while (*str) {
-		drawChar(buffer, x, y, char_w, char_h, *str);
-		x += char_w;
+		drawChar(buffer, x, y, CHAR_WIDTH, CHAR_HEIGHT, *str, color);
+		x += CHAR_WIDTH;
 		str++;
 	}
 }
