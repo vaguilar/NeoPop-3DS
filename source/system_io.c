@@ -32,6 +32,8 @@ char *flash_dir;
 int use_rom_name;
 int state_slot;
 
+Handle dir_handle;
+
 static BOOL
 read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 {
@@ -84,7 +86,7 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
     ret=FSFILE_GetSize(fileHandle, &size);
     if(ret)goto exit;
 
-    //read contents !
+    //read contents
     ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, buffer, size);
     if(ret || size!=bytesRead)goto exit;
 
@@ -131,6 +133,45 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
     return TRUE;
 }
 
+BOOL
+read_dir_open(char *dir_name)
+{
+	FS_archive sdmcArchive = (FS_archive) {ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+	FSUSER_OpenArchive(NULL, &sdmcArchive);
+
+	FS_path dir_path = (FS_path){PATH_CHAR, strlen(dir_name) + 1, dir_name};
+
+	if (FSUSER_OpenDirectory(NULL, &dir_handle, sdmcArchive, dir_path))
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL
+read_dir_next(FS_dirent *dir_entry)
+{
+	if (!dir_handle)
+		return FALSE;
+
+	u32 nread = 0;
+	FSDIR_Read(dir_handle, &nread, 1, dir_entry);
+
+	if (!nread)
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL
+read_dir_close()
+{
+	if (dir_handle) {
+		FSDIR_Close(dir_handle);
+		return TRUE;
+	}
+
+	return FALSE;
+}
 
 static BOOL
 validate_dir(const char *path)

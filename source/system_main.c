@@ -204,6 +204,14 @@ void blue() {
 	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x000077ff);
 }
 
+void purple() {
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x770077ff);
+}
+
+void other() {
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x007777ff);
+}
+
 void clear_top() {
 	gfxFillColor(GFX_TOP, GFX_LEFT, 0x000000ff);
 }
@@ -211,38 +219,27 @@ void clear_top() {
 /* TODO redo this whole menu correctly */
 void rom_menu(char *dir, char *rom_filename) {
 
-	int current_rom = 0;
-	FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
-	FSUSER_OpenArchive(NULL, &sdmcArchive);
+	_u32 keys 			= 0;
+	_u32 oldKeys 		= 0;
+	_u16 current_rom 	= 0;
+	_u16 nfiles			= 0;
 
-	Handle dir_handle;
-	FS_path dir_path = (FS_path){PATH_CHAR, strlen(dir) + 1, dir};
-	FS_dirent entry;
-	int nfiles = 0;
+	FS_dirent dir_entry;
 
-	FSUSER_OpenDirectory(NULL, &dir_handle, sdmcArchive, dir_path);
+	read_dir_open(dir);
 
-	u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+	while (read_dir_next(&dir_entry)) {
 
-	while (1) {
-
-		u32 nread = 0;
-		FSDIR_Read(dir_handle, &nread, 1, &entry);
-		if (!nread) break;
-
-		int c;
-		for(c = 0; entry.name[c]; c++)
-			rom_list[nfiles][c] = entry.name[c];
+		_u16 c;
+		for(c = 0; dir_entry.name[c]; c++)
+			rom_list[nfiles][c] = dir_entry.name[c];
 
 		rom_list[nfiles][c] = 0;
-
 		nfiles++;
 
 	}
 
-	FSDIR_Close(dir_handle);
-
-	int keys, oldKeys = 0;
+	read_dir_close();
 
 	while (1) {
 
@@ -257,12 +254,12 @@ void rom_menu(char *dir, char *rom_filename) {
 			current_rom = (current_rom + 1) % nfiles;
 		}
 
-		if(keys != oldKeys && keys & KEY_A) {
+		if(keys != oldKeys && (keys & KEY_A || keys & KEY_START)) {
 			break;
 		}
 
-		int frame_width, frame_height, i;
-		u8* bufAdr = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
+		_u32 frame_width, frame_height, i;
+		_u8* bufAdr = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
 
 		/* clear screen */
 		for (i = 0; i < frame_width * frame_height * 3; i++)
@@ -303,14 +300,12 @@ int
 main(int argc, char *argv[])
 {
     char *start_state;
-    int ch;
-    int i;
 
 #ifdef _3DS
 	srvInit(); // Needed
 	aptInit(); // Needed
 	gfxInit(); // Init graphic stuff
-	fsInit();
+	fsInit();  // Filesystem
 	hidInit(NULL);
 #endif
 
@@ -483,8 +478,7 @@ main(int argc, char *argv[])
      * of complete frames that should be shown per second.
      * In this case, both are constants;
      */
-    //throttle_rate = 1000000/NGP_FPS;
-    throttle_rate = 0;
+    throttle_rate = 1000000/NGP_FPS;
 
 	char rom_filename[256] = "neogeo/";
 	rom_menu("/neogeo", &rom_filename[7]);
