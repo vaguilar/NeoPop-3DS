@@ -31,11 +31,11 @@
 
 	int w1, w2, w3, w4, w5, w6, w7, w8, w9;
 
-	const Uint32 nextlineSrc = srcPitch / sizeof(Uint16);
-	const Uint16 *p = (const Uint16 *)srcPtr;
+	const _u32 nextlineSrc = srcPitch / sizeof(_u16);
+	const _u16 *p = (const _u16 *)srcPtr;
 
-	const Uint32 nextlineDst = dstPitch / sizeof(Uint16);
-	Uint16 *q = (Uint16 *)dstPtr;
+	const _u32 nextlineDst = dstPitch / sizeof(_u16);
+	_u16 *q = (_u16 *)dstPtr;
 
 	/*
 		 +----+----+----+

@@ -60,14 +60,14 @@ int need_redraw;
 static BOOL system_graphics_screen_init(int mfactor);
 
 /* lookup table for display surface pixels */
-static Uint32 rgb_lookup[16*16*16];
+static _u32 rgb_lookup[16*16*16];
 /* lookup table for YUV overlay pixels */
-static Uint32 yuv_lookup[16*16*16];
+static _u32 yuv_lookup[16*16*16];
 /* lookup table for hqx pseudo-YUV */
-Uint32 hqx_lookup[16*16*16];
+_u32 hqx_lookup[16*16*16];
 
 /* frame buffer for smoothed magnification */
-static Uint16 magfb[SCREEN_WIDTH*SCREEN_HEIGHT*9];
+static _u16 magfb[SCREEN_WIDTH*SCREEN_HEIGHT*9];
 
 BOOL
 system_graphics_init(void)
@@ -281,7 +281,7 @@ system_graphics_screen_init(int mfactor)
 void
 system_graphics_update(void)
 {
-    Uint32 *lookup;
+    _u32 *lookup;
     int x, y, pitch, w, h;
     _u16 *fbp;
 	_u16 fbWidth, fbHeight;
@@ -342,7 +342,7 @@ system_graphics_update(void)
 	SDL_LockYUVOverlay(over);
 	pitch = over->pitches[0]/4;
 	lookup = yuv_lookup;
-	LOOP(Uint32, 1, over->pixels[0]);
+	LOOP(_u32, 1, over->pixels[0]);
 	SDL_UnlockYUVOverlay(over);
 
 	SDL_DisplayYUVOverlay(over, (fs_mode ? &orect_fs : &orect_win));
@@ -355,13 +355,13 @@ system_graphics_update(void)
 
 	    switch (graphics_mag_actual) {
 	    case 2:
-		HQ2x((Uint8 *)cfb, SCREEN_WIDTH*sizeof(Uint16),
-		     (Uint8 *)magfb, SCREEN_WIDTH*2*sizeof(Uint16),
+		HQ2x((_u8 *)cfb, SCREEN_WIDTH*sizeof(_u16),
+		     (_u8 *)magfb, SCREEN_WIDTH*2*sizeof(_u16),
 		     SCREEN_WIDTH, SCREEN_HEIGHT);
 		break;
 	    case 3:
-		HQ3x((Uint8 *)cfb, SCREEN_WIDTH*sizeof(Uint16),
-		     (Uint8 *)magfb, SCREEN_WIDTH*3*sizeof(Uint16),
+		HQ3x((_u8 *)cfb, SCREEN_WIDTH*sizeof(_u16),
+		     (_u8 *)magfb, SCREEN_WIDTH*3*sizeof(_u16),
 		     SCREEN_WIDTH, SCREEN_HEIGHT);
 		break;
 	    }
@@ -370,32 +370,32 @@ system_graphics_update(void)
 	    switch (disp->format->BytesPerPixel) {
 	    case 1:
 		pitch = disp->pitch;
-		LOOP(Uint8, 1, disp->pixels);
+		LOOP(_u8, 1, disp->pixels);
 		break;
 		
 	    case 2:
 		pitch = disp->pitch/2;
-		LOOP(Uint16, 1, disp->pixels);
+		LOOP(_u16, 1, disp->pixels);
 		break;
 		
 	    case 4:
 		pitch = disp->pitch/4;
-		LOOP(Uint32, 1, disp->pixels);
+		LOOP(_u32, 1, disp->pixels);
 		break;
 	    }
 	}
 	else {
 	    switch (disp->format->BytesPerPixel) {
 	    case 1:
-		SWITCH(Uint8, 1);
+		SWITCH(_u8, 1);
 		break;
 		
 	    case 2:
-		SWITCH(Uint16, 2);
+		SWITCH(_u16, 2);
 		break;
 		
 	    case 4:
-		SWITCH(Uint32, 4);
+		SWITCH(_u32, 4);
 		break;
 	    }
 	}

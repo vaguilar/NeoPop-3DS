@@ -39,7 +39,7 @@ static int bpf;		/* bytes per frame */
 static int dac_bpf;	/* bytes of DAC data per frame */
 
 //static SDL_AudioCVT acvt;
-static Uint8 silence_value;
+static _u8 silence_value;
 
 static char *sound_buffer;
 static char *dac_data;
@@ -149,7 +149,7 @@ system_sound_silence(void)
 }
 
 void
-system_sound_callback(void *userdata, Uint8 *stream, int len)
+system_sound_callback(void *userdata, _u8 *stream, int len)
 {
 	/*
     if (sound_buffer == NULL)

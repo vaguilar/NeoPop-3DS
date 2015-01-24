@@ -36,7 +36,7 @@
 
 void hq2x_16(const byte *, byte *, uint32, uint32, uint32, uint32);
 
-void HQ2x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ2x(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 	hq2x_16(srcPtr, dstPtr, width, height, srcPitch, dstPitch);
 }
 
@@ -114,7 +114,7 @@ static int isAltiVecAvailable()  {
 #define HQ2x	HQ2x_c
 #endif
 
-void HQ2x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ2x(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 #include "system_hq2x.h"
 }
 
@@ -123,12 +123,12 @@ void HQ2x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, 
 #undef HQ2x
 
 #define USE_ALTIVEC	1
-void HQ2x_Altivec(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ2x_Altivec(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 #include "system_hq2x.h"
 }
 #undef USE_ALTIVEC
 
-void HQ2x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ2x(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 	if (isAltiVecAvailable())
 		HQ2x_565_Altivec(srcPtr, srcPitch, dstPtr, dstPitch, width, height);
 	else

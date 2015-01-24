@@ -34,9 +34,9 @@
 #define hq3x_16 _hq3x_16
 #endif
 
-void hq3x_16(const byte *, byte *, Uint32, Uint32, Uint32, Uint32);
+void hq3x_16(const byte *, byte *, _u32, _u32, _u32, _u32);
 
-void HQ3x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ3x(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 	hq3x_16(srcPtr, dstPtr, width, height, srcPitch, dstPitch);
 }
 
@@ -116,7 +116,7 @@ static int isAltiVecAvailable()  {
 #define HQ3x	HQ3x_c
 #endif
 
-void HQ3x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ3x(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 #include "system_hq3x.h"
 }
 
@@ -124,12 +124,12 @@ void HQ3x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, 
 #undef HQ3x
 
 #define USE_ALTIVEC	1
-void HQ3x_Altivec(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ3x_Altivec(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 #include "system_hq3x.h"
 }
 #undef USE_ALTIVEC
 
-void HQ3x(const Uint8 *srcPtr, Uint32 srcPitch, Uint8 *dstPtr, Uint32 dstPitch, int width, int height) {
+void HQ3x(const _u8 *srcPtr, _u32 srcPitch, _u8 *dstPtr, _u32 dstPitch, int width, int height) {
 	if (isAltiVecAvailable()) {
 		HQ3x_Altivec(srcPtr, srcPitch, dstPtr, dstPitch, width, height);
 	else

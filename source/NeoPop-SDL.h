@@ -23,10 +23,6 @@
 
 #include "neopop.h"
 
-#define Uint8 unsigned int
-#define Uint16 unsigned int
-#define Uint32 unsigned int
-
 /* one per line, please */
 enum neopop_event {
     /* unbound key */
@@ -192,7 +188,7 @@ void system_rom_unload(void);
 
 int system_screenshot(void);
 
-void system_sound_callback(void *, Uint8 *, int);
+void system_sound_callback(void *, _u8 *, int);
 void system_sound_chipreset(void);
 BOOL system_sound_init(void);
 void system_sound_shutdown(void);
@@ -202,8 +198,8 @@ void system_sound_update(int);
 void system_state_load(void);
 void system_state_save(void);
 
-void HQ2x(const Uint8 *, Uint32, Uint8 *, Uint32, int, int);
-void HQ3x(const Uint8 *, Uint32, Uint8 *, Uint32, int, int);
+void HQ2x(const _u8 *, _u32, _u8 *, _u32, int, int);
+void HQ3x(const _u8 *, _u32, _u8 *, _u32, int, int);
 
 extern int do_exit;
 extern int paused;
@@ -225,7 +221,7 @@ extern int fs_mode;
 extern int need_redraw;
 extern int osd_colour;
 
-extern Uint32 hqx_lookup[16*16*16];
+extern _u32 hqx_lookup[16*16*16];
 
 extern enum neopop_event bindings[];
 extern const char *comms_names[];
