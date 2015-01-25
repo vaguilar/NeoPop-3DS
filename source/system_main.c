@@ -38,16 +38,8 @@ int have_sound;
 void readrc(void);
 
 static void
-printversion(void)
-{
-    printf(PROGRAM_NAME " (SDL) " NEOPOP_VERSION " (SDL-Version "
-	   VERSION ")\n");
-}
-
-static void
 usage(int exitcode)
 {
-    printversion();
     printf("NeoGeo Pocket emulator\n\n"
 	   "Usage: %s [-cefghjMmSsv] [-C mode] [-P port] [-R remove] [game]\n"
 	   "\t-C mode\t\tspecify comms mode (none, server, client; default: none)\n"
@@ -77,8 +69,8 @@ system_message(char *vaMessage, ...)
 
     va_start(vl, vaMessage);
     vprintf(vaMessage, vl);
+	system_debug_print(vaMessage);
     va_end(vl);
-    printf("\n");
 }
 
 void
@@ -223,7 +215,6 @@ void rom_menu(char *dir, char *rom_filename) {
 	_u32 oldKeys 		= 0;
 	_u16 current_rom 	= 0;
 	_u16 nfiles			= 0;
-
 	FS_dirent dir_entry;
 
 	read_dir_open(dir);
@@ -231,10 +222,21 @@ void rom_menu(char *dir, char *rom_filename) {
 	while (read_dir_next(&dir_entry)) {
 
 		_u16 c;
-		for(c = 0; dir_entry.name[c]; c++)
-			rom_list[nfiles][c] = dir_entry.name[c];
+		_u16 length = 0;
+		_u16 *ptr = dir_entry.name;
 
-		rom_list[nfiles][c] = 0;
+		/* the name string in FS_dirent uses 2 bytes per char, can't use strlen */
+		while (*ptr) {
+			length++;
+			ptr++;
+		}
+
+		rom_list[nfiles] = calloc(length + 1, 1);
+
+		for(c = 0; dir_entry.name[c]; c++) {
+			rom_list[nfiles][c] = dir_entry.name[c];
+		}
+
 		nfiles++;
 
 	}
@@ -259,20 +261,29 @@ void rom_menu(char *dir, char *rom_filename) {
 		}
 
 		_u32 frame_width, frame_height, i;
-		_u8* bufAdr = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
+		_u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &frame_width, &frame_height);
 
 		/* clear screen */
 		for (i = 0; i < frame_width * frame_height * 3; i++)
 			bufAdr[i] = 0;
 
-		drawString(bufAdr, "ROM LIST", 10, 10, 0xffffffff);
+		system_debug_clear();
+		char w[2] = {'a' + DEBUG_SCREEN_ROWS, 0x0};
+		system_debug_println("ROM LIST");
 
 		for(i = 0; rom_list[i][0] && i < MAX_ROMS; i++) {
-			if (current_rom == i) {
-				drawString(bufAdr, ">", 12, ((i + 2) * 16), 0xcccccccc);
-			}
 
-			drawString(bufAdr, rom_list[i], 32, ((i + 2) * 16), 0xcccccccc);
+			if (current_rom == i)
+				system_debug_print(" > ");
+			else
+				system_debug_print("   ");
+
+			system_debug_println(rom_list[i]);
+
+		}
+
+		for (i = 0; i < DEBUG_SCREEN_ROWS; i++) {
+			drawString(bufAdr, debug_buffer[i], 4, (i * (CHAR_HEIGHT + 4)) + 4, 0xccccccff);
 		}
 
 		oldKeys = keysHeld();
@@ -284,9 +295,14 @@ void rom_menu(char *dir, char *rom_filename) {
 
 	strcpy(rom_filename, rom_list[current_rom]);
 
+	system_debug_clear();
+	system_debug_print("Loading ROM ");
+	system_debug_println(rom_list[current_rom]);
+
 	// Clear both buffers
 	clear_top();
 	clear_top();
+
 }
 #endif
 
@@ -421,10 +437,6 @@ main(int argc, char *argv[])
 	    break;
 	case 's':
 	    mute = FALSE;
-	    break;
-	case 'V':
-	    printversion();
-	    exit(0);
 	    break;
 	case 'y':
 	    i = system_rc_parse_yuv(optarg);

@@ -1,13 +1,14 @@
 #include <3ds.h>
 #include "font.h"
+#include "NeoPop-SDL.h"
 
 void drawPixel(u8* buffer, int x, int y, int color)
 {
 	int xx = x + 1, yy = y + 1;
 	u32 v = ((xx * 240) - yy) * 3;
-	buffer[v++] = (color >>  8) & 0xff; // B
-	buffer[v++] = (color >> 16) & 0xff; // G
 	buffer[v++] = (color >> 24) & 0xff; // R
+	buffer[v++] = (color >> 16) & 0xff; // G
+	buffer[v++] = (color >>  8) & 0xff; // B
 }
 
 void drawChar(u8* buffer, int x, int y, int w, int h, int ascii, int color)

@@ -40,8 +40,6 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 
 #ifndef _3DS
 
-	printf("READING FILE: %s\n", filename);
-
     FILE *fp;
     _u32 got;
 

@@ -300,7 +300,7 @@ system_graphics_update(void)
 			int gr = CONV4TO8((i>>4)&0xf);
 			int bl = CONV4TO8(i>>8);
 
-			int xx = x + 118 + 1, yy = y + 44 + 1;
+			int xx = x + 120 + 1, yy = y + 44 + 1;
 			_u32 v = ((xx * 240) - yy) * 3;
 			fbAdr[v++] = bl;
 			fbAdr[v++] = gr;
@@ -308,8 +308,15 @@ system_graphics_update(void)
 		}
     }
 
-	//gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x000000ff);
-	//u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+	_u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &fbWidth, &fbHeight);
+
+	/* clear screen */
+	for (z = 0; z < fbWidth * fbHeight * 3; z++)
+		bufAdr[z] = 0;
+
+	for (y = 0; y < DEBUG_SCREEN_ROWS; y++) {
+		drawString(bufAdr, debug_buffer[y], 4, (y * (CHAR_HEIGHT + 4)) + 4, 0xffffffff);
+	}
 
 	gfxFlushBuffers();
 	gfxSwapBuffers();

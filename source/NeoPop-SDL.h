@@ -159,6 +159,8 @@ void system_bindings_init(void);
 BOOL system_comms_connect(void);
 void system_comms_pause(BOOL);
 
+void system_debug_print(char*);
+
 void system_graphics_fullscreen(int);
 BOOL system_graphics_init(void);
 void system_graphics_update(void);
@@ -229,6 +231,13 @@ extern const char *npev_names[];
 extern const char *nprc_names[];
 extern const char *yuv_names[];
 
-#define MAX_FILENAME_LENGTH 64
+#define CHAR_WIDTH 9
+#define CHAR_HEIGHT 13
+#define DEBUG_SCREEN_COLS (320 / (CHAR_WIDTH))
+#define DEBUG_SCREEN_ROWS (240 / (CHAR_HEIGHT + 4))
+
+_u8 debug_buffer[DEBUG_SCREEN_ROWS][DEBUG_SCREEN_COLS + 1];
+
+#define MAX_FILENAME_LENGTH 40
 #define MAX_ROMS 16
-char rom_list[MAX_ROMS][MAX_FILENAME_LENGTH];
+char* rom_list[MAX_ROMS];
