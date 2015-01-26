@@ -67,11 +67,11 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 
 #else
 
-    u64 size;
-    u32 bytesRead;
+    _u64 size;
+    _u32 bytesRead;
     Handle fileHandle;
     //setup SDMC archive
-    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
     //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
     FS_path filePath=FS_makePath(PATH_CHAR, filename);
 
@@ -134,7 +134,7 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 BOOL
 read_dir_open(char *dir_name)
 {
-	FS_archive sdmcArchive = (FS_archive) {ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+	FS_archive sdmcArchive = (FS_archive) {ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
 	FSUSER_OpenArchive(NULL, &sdmcArchive);
 
 	FS_path dir_path = (FS_path){PATH_CHAR, strlen(dir_name) + 1, dir_name};
@@ -151,7 +151,7 @@ read_dir_next(FS_dirent *dir_entry)
 	if (!dir_handle)
 		return FALSE;
 
-	u32 nread = 0;
+	_u32 nread = 0;
 	FSDIR_Read(dir_handle, &nread, 1, dir_entry);
 
 	if (!nread)

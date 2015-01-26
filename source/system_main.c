@@ -160,22 +160,22 @@ system_VBL(void)
 }
 
 #ifdef _3DS
-void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, u32 color)
+void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, _u32 color)
 {
     const float max = 255;
-    u16 fbWidth, fbHeight;
-    u8* fbAdr = gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
+    _u16 fbWidth, fbHeight;
+    _u8* fbAdr = gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
-    union{ u32 color; struct{ u8 a, b, g, r; } rgba; } rgbaColor;
+    union{ _u32 color; struct{ _u8 a, b, g, r; } rgba; } rgbaColor;
     rgbaColor.color = color;
 
     int i;
     for (i = 0; i<fbWidth*fbHeight; i++)
     {
-        u8 rgb_prev[] = { *(fbAdr), *(fbAdr + 1), *(fbAdr + 2) };
-        *(fbAdr++) = (u8)(rgbaColor.rgba.b * (rgbaColor.rgba.a / max) + rgb_prev[0] * ((max - rgbaColor.rgba.a) / max));
-        *(fbAdr++) = (u8)(rgbaColor.rgba.g * (rgbaColor.rgba.a / max) + rgb_prev[1] * ((max - rgbaColor.rgba.a) / max));
-        *(fbAdr++) = (u8)(rgbaColor.rgba.r * (rgbaColor.rgba.a / max) + rgb_prev[2] * ((max - rgbaColor.rgba.a) / max));
+        _u8 rgb_prev[] = { *(fbAdr), *(fbAdr + 1), *(fbAdr + 2) };
+        *(fbAdr++) = (_u8)(rgbaColor.rgba.b * (rgbaColor.rgba.a / max) + rgb_prev[0] * ((max - rgbaColor.rgba.a) / max));
+        *(fbAdr++) = (_u8)(rgbaColor.rgba.g * (rgbaColor.rgba.a / max) + rgb_prev[1] * ((max - rgbaColor.rgba.a) / max));
+        *(fbAdr++) = (_u8)(rgbaColor.rgba.r * (rgbaColor.rgba.a / max) + rgb_prev[2] * ((max - rgbaColor.rgba.a) / max));
     }
 
 	gfxFlushBuffers();

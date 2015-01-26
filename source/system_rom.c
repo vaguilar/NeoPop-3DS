@@ -47,12 +47,12 @@ rom_load(char *filename)
 
 #ifdef _3DS
 
-    u64 size;
-    u32 bytesRead;
+    _u64 size;
+    _u32 bytesRead;
     Handle fileHandle;
 
     //setup SDMC archive
-    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
     //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
     FS_path filePath=FS_makePath(PATH_CHAR, filename);
 

@@ -122,7 +122,6 @@
 
 #ifdef _3DS
 #include <3ds.h>
-#include "text.h"
 #else
 #include <SDL.h>
 #endif
