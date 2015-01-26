@@ -33,6 +33,18 @@ void system_debug_println(char *msg)
 	col = 0;
 }
 
+void system_debug_printf(char *str, ...)
+{
+	char buffer[256] = {0};
+	va_list vl;
+
+	va_start(vl, str);
+	vsnprintf (buffer, 255, str, vl);
+	va_end(vl);
+
+	system_debug_print(buffer);
+}
+
 void system_debug_clear()
 {
 	_u32 r, c;
