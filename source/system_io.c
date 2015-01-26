@@ -171,6 +171,36 @@ read_dir_close()
 	return FALSE;
 }
 
+_s64
+get_file_size(char *filename) {
+
+    _s64 size;
+    Handle fileHandle;
+
+    //setup SDMC archive
+    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
+    //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
+    FS_path filePath=FS_makePath(PATH_CHAR, filename);
+
+    //open file
+    Result ret=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+    //check for errors : exit if there is one
+    if(ret)goto exit;
+
+    //get file size
+    ret=FSFILE_GetSize(fileHandle, &size);
+    if(ret)goto exit;
+
+    //close the file because we like being nice and tidy
+    ret=FSFILE_Close(fileHandle);
+    if(ret)goto exit;
+
+	return size;
+
+	exit:
+		return -1;
+}
+
 static BOOL
 validate_dir(const char *path)
 {

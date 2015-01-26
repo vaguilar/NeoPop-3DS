@@ -47,30 +47,12 @@ rom_load(char *filename)
 
 #ifdef _3DS
 
-    _u64 size;
-    _u32 bytesRead;
-    Handle fileHandle;
+	_s64 size = get_file_size(filename);
 
-    //setup SDMC archive
-    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
-    //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
-    FS_path filePath=FS_makePath(PATH_CHAR, filename);
+	if (size < 0)
+		return FALSE;
 
-    //open file
-    Result ret=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
-    //check for errors : exit if there is one
-    if(ret)goto exit;
-
-    //get file size
-    ret=FSFILE_GetSize(fileHandle, &size);
-    if(ret)goto exit;
-
-	//set file size in struct
-	st.st_size = size;
-
-    //close the file because we like being nice and tidy
-    ret=FSFILE_Close(fileHandle);
-    if(ret)goto exit;
+	st.st_size = (_u32) size;
 
 #else
 
