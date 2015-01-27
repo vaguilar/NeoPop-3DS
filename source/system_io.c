@@ -70,8 +70,10 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
     _u64 size;
     _u32 bytesRead;
     Handle fileHandle;
+
     //setup SDMC archive
     FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
+
     //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
     FS_path filePath=FS_makePath(PATH_CHAR, filename);
 
@@ -95,6 +97,7 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 	return TRUE;
 
 	exit:
+		system_debug_printf("\nERROR: %#010x\n\n", ret);
 		return FALSE;
 
 #endif
@@ -103,10 +106,38 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 static BOOL
 write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 {
+#ifdef _3DS
+
+	Handle fileHandle;
+	_u32 byteswritten = 0;
+
+	//setup SDMC archive
+	FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
+
+	FS_path filePath = FS_makePath(PATH_CHAR, filename);
+
+	Result ret = FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_CREATE|FS_OPEN_WRITE, FS_ATTRIBUTE_NONE);
+	if (ret) goto exit;
+
+	ret = FSFILE_SetSize(fileHandle, (_u64)len);
+	if (ret) goto exit;
+
+	ret = FSFILE_Write(fileHandle, &byteswritten, 0, (_u32*)buffer, len, FS_WRITE_FLUSH);
+	if (ret) goto exit;
+
+	ret = FSFILE_Close(fileHandle);
+	if(ret) goto exit;
+
+	return TRUE;
+
+	exit:
+		system_debug_printf("\nERROR: %#010x\n\n", ret);
+		return FALSE;
+
+#else
+
     FILE *fp;
     _u32 written;
-
-	printf("WRITING TO FILE: %s\n", filename);
 
     if ((fp=fopen(filename, "wb")) == NULL)
 	return FALSE;
@@ -129,6 +160,8 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 	return FALSE;
 
     return TRUE;
+
+#endif
 }
 
 BOOL
