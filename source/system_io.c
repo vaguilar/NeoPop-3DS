@@ -37,36 +37,6 @@ Handle dir_handle;
 static BOOL
 read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 {
-
-#ifndef _3DS
-
-    FILE *fp;
-    _u32 got;
-
-    if ((fp=fopen(filename, "rb")) == NULL)
-	return FALSE;
-
-    while ((got=fread(buffer, 1, len, fp)) < len) {
-	if (feof(fp)) {
-	    fclose(fp);
-	    return FALSE;
-	}
-	if (ferror(fp) && errno != EINTR) {
-	    fclose(fp);
-	    return FALSE;
-	}
-
-	len -= got;
-	buffer += got;
-    }
-	    
-    if (fclose(fp) != 0)
-	return FALSE;
-
-    return TRUE;
-
-#else
-
     _u64 size;
     _u32 bytesRead;
     Handle fileHandle;
@@ -99,15 +69,11 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 	exit:
 		system_debug_printf("\nERROR: %#010x\n\n", ret);
 		return FALSE;
-
-#endif
 }
 
 static BOOL
 write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 {
-#ifdef _3DS
-
 	Handle fileHandle;
 	_u32 byteswritten = 0;
 
@@ -133,35 +99,6 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 	exit:
 		system_debug_printf("\nERROR: %#010x\n\n", ret);
 		return FALSE;
-
-#else
-
-    FILE *fp;
-    _u32 written;
-
-    if ((fp=fopen(filename, "wb")) == NULL)
-	return FALSE;
-
-    while ((written=fwrite(buffer, 1, len, fp)) < len) {
-	if (feof(fp)) {
-	    fclose(fp);
-	    return FALSE;
-	}
-	if (ferror(fp) && errno != EINTR) {
-	    fclose(fp);
-	    return FALSE;
-	}
-
-	len -= written;
-	buffer += written;
-    }
-	    
-    if (fclose(fp) != 0)
-	return FALSE;
-
-    return TRUE;
-
-#endif
 }
 
 BOOL
@@ -331,8 +268,6 @@ system_io_flash_read(_u8* buffer, _u32 len)
     char *fn;
     int ret;
 
-	printf("READING %d bytes to flash %s\n", len, flash_dir);
-
     if ((fn=system_make_file_name(flash_dir, ".ngf", FALSE)) == NULL)
 	return FALSE;
 
@@ -340,8 +275,6 @@ system_io_flash_read(_u8* buffer, _u32 len)
 
     ret = read_file_to_buffer(fn, buffer, len);
     free(fn);
-
-	printf("READ: 0x%.*x\n", len, buffer);
 
     return ret;
 }
@@ -351,8 +284,6 @@ system_io_flash_write(_u8* buffer, _u32 len)
 {
     char *fn;
     int ret;
-
-	printf("WRITING %d bytes to flash %s\n", len, flash_dir);
 
     if ((fn=system_make_file_name(flash_dir, ".ngf", TRUE)) == NULL)
 	return FALSE;
