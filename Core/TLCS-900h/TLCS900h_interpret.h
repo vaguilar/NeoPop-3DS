@@ -62,7 +62,7 @@ extern BOOL brCode;
 
 //=============================================================================
 
-void __cdecl instruction_error(char* vaMessage,...);
+void instruction_error(char* vaMessage,...);
 
 //=============================================================================
 

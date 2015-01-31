@@ -290,7 +290,7 @@ RomHeader;
 	has been displayed, the function should return. The message is not
 	necessarily a fatal error. */
 	
-	void __cdecl system_message(char* vaMessage,...);
+	void system_message(char* vaMessage,...);
 
 /*! Called at the start of the vertical blanking period, this function is
 	designed to perform many of the critical hardware interface updates
@@ -448,7 +448,7 @@ RomHeader;
 	main build. For example the memory module (mem.c) uses this function
 	to indicate a memory exception */
 
-	void __cdecl system_debug_message(char* vaMessage,...);
+	void system_debug_message(char* vaMessage,...);
 
 
 /*! This function pairs with the function above. This is used to associate

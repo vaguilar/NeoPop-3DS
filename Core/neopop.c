@@ -66,7 +66,7 @@ _u8 frameskip_count;
 //=============================================================================
 
 static BOOL debug_abort_instruction = FALSE;
-void __cdecl instruction_error(char* vaMessage,...)
+void instruction_error(char* vaMessage,...)
 {
 	char message[1000];
 	va_list vl;

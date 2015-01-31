@@ -320,7 +320,7 @@ main(int argc, char *argv[])
 #ifdef _3DS
 	srvInit(); // Needed
 	aptInit(); // Needed
-	gfxInit(); // Init graphic stuff
+	gfxInitDefault(); // Init graphic stuff
 	fsInit();  // Filesystem
 	hidInit(NULL);
 #endif
