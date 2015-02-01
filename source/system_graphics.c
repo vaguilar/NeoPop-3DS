@@ -284,38 +284,48 @@ system_graphics_update(void)
     _u32 *lookup;
     int x, y, pitch, w, h;
     _u16 *fbp;
-	_u16 fbWidth, fbHeight;
-	_u16* buffer = cfb;
 
 #ifdef _3DS
 
-    _u8* fbAdr = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &fbWidth, &fbHeight);
+	_u16 frame_width, frame_height;
+	_u16* buffer = cfb;
+	_u8* frame_buffer = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
 
-	int z = 0;
-    for (y=0; y<SCREEN_HEIGHT; y++) {
-		for (x=0; x<SCREEN_WIDTH; x++) {
+	switch(current_display) {
+	case NPDS_ROM_MENU:
+		break;
 
-			int i = *(buffer++);
-			int re = CONV4TO8(i&0xf);
-			int gr = CONV4TO8((i>>4)&0xf);
-			int bl = CONV4TO8(i>>8);
+	case NPDS_GAME:
+		for (y=0; y<SCREEN_HEIGHT; y++) {
+			for (x=0; x<SCREEN_WIDTH; x++) {
 
-			int xx = x + 120 + 1, yy = y + 44 + 1;
-			_u32 v = ((xx * 240) - yy) * 3;
-			fbAdr[v++] = bl;
-			fbAdr[v++] = gr;
-			fbAdr[v++] = re;
+				_u16 i = *(buffer++);
+				_u8  r = CONV4TO8(i&0xf);
+				_u8  g = CONV4TO8((i>>4)&0xf);
+				_u8  b = CONV4TO8(i>>8);
+
+				_u32 xx = x + 120 + 1, yy = y + 44 + 1;
+				_u32 v = ((xx * 240) - yy) * 3;
+				frame_buffer[v++] = b;
+				frame_buffer[v++] = g;
+				frame_buffer[v++] = r;
+			}
 		}
-    }
 
-	_u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &fbWidth, &fbHeight);
+		break;
+
+	default:
+		break;
+	}
+
+	frame_buffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &frame_width, &frame_height);
 
 	/* clear screen */
-	for (z = 0; z < fbWidth * fbHeight * 3; z++)
-		bufAdr[z] = 0;
+	for (x = 0; x < frame_width * frame_height * 3; x++)
+		frame_buffer[x] = 0;
 
 	for (y = 0; y < DEBUG_SCREEN_ROWS; y++) {
-		drawString(bufAdr, debug_buffer[y], 4, (y * (CHAR_HEIGHT + 4)) + 4, 0xffffffff);
+		drawString(frame_buffer, debug_buffer[y], 4, (y * (CHAR_HEIGHT + 4)) + 4, 0xffffffff);
 	}
 
 	gfxFlushBuffers();

@@ -247,3 +247,8 @@ _u8 debug_buffer[DEBUG_SCREEN_ROWS][DEBUG_SCREEN_COLS + 1];
 #define MAX_FILENAME_LENGTH 40
 #define MAX_ROMS 16
 char* rom_list[MAX_ROMS];
+
+enum neopop_display {
+       NPDS_ROM_MENU,
+       NPDS_GAME
+} current_display;

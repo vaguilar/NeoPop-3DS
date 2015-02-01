@@ -183,45 +183,21 @@ void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, _u32 color)
 	gspWaitForVBlank();
 }
 
-/* TODO poor mans debugging, implement actual debugging methods */
-void yes() {
-	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x007700ff);
-}
-
-void no() {
-	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x770000ff);
-}
-
-void blue() {
-	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x000077ff);
-}
-
-void purple() {
-	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x770077ff);
-}
-
-void other() {
-	gfxFillColor(GFX_BOTTOM, GFX_LEFT, 0x007777ff);
-}
-
-void clear_top() {
-	gfxFillColor(GFX_TOP, GFX_LEFT, 0x000000ff);
-}
-
-/* TODO redo this whole menu correctly */
-void rom_menu(char *dir, char *rom_filename) {
-
+void rom_menu(char *dir, char *rom_filename)
+{
+	_u32 i				= 0;
 	_u32 keys 			= 0;
 	_u32 oldKeys 		= 0;
 	_u16 current_rom 	= 0;
-	_u16 nfiles			= 0;
+	_u16 num_files		= 0;
 	FS_dirent dir_entry;
 
+	current_display = NPDS_ROM_MENU;
 	read_dir_open(dir);
 
-	while (read_dir_next(&dir_entry)) {
+	/* read files into array */
+	while (read_dir_next(&dir_entry) && num_files < MAX_ROMS) {
 
-		_u16 c;
 		_u16 length = 0;
 		_u16 *ptr = dir_entry.name;
 
@@ -231,46 +207,40 @@ void rom_menu(char *dir, char *rom_filename) {
 			ptr++;
 		}
 
-		rom_list[nfiles] = calloc(length + 1, 1);
+		rom_list[num_files] = calloc(length + 1, 1);
 
-		for(c = 0; dir_entry.name[c]; c++) {
-			rom_list[nfiles][c] = dir_entry.name[c];
+		for(i = 0; dir_entry.name[i]; i++) {
+			rom_list[num_files][i] = dir_entry.name[i];
 		}
 
-		nfiles++;
+		num_files++;
 
 	}
 
 	read_dir_close();
 
+	/* TODO move input stuff to system_input.c */
 	while (1) {
 
 		hidScanInput();
 		keys = keysHeld();
 
 		if(keys != oldKeys && keys & KEY_UP) {
-			current_rom = current_rom > 0 ? (current_rom - 1) % nfiles : nfiles - 1;
+			current_rom = current_rom > 0 ? (current_rom - 1) % num_files : num_files - 1;
 		}
 
 		if(keys != oldKeys && keys & KEY_DOWN) {
-			current_rom = (current_rom + 1) % nfiles;
+			current_rom = (current_rom + 1) % num_files;
 		}
 
 		if(keys != oldKeys && (keys & KEY_A || keys & KEY_START)) {
 			break;
 		}
 
-		_u32 frame_width, frame_height, i;
-		_u8* bufAdr = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &frame_width, &frame_height);
-
-		/* clear screen */
-		for (i = 0; i < frame_width * frame_height * 3; i++)
-			bufAdr[i] = 0;
-
 		system_debug_clear();
 		system_debug_println("ROM LIST");
 
-		for(i = 0; rom_list[i][0] && i < MAX_ROMS; i++) {
+		for(i = 0; i < num_files; i++) {
 
 			if (current_rom == i)
 				system_debug_print(" > ");
@@ -281,27 +251,20 @@ void rom_menu(char *dir, char *rom_filename) {
 
 		}
 
-		for (i = 0; i < DEBUG_SCREEN_ROWS; i++) {
-			drawString(bufAdr, debug_buffer[i], 4, (i * (CHAR_HEIGHT + 4)) + 4, 0xccccccff);
-		}
-
+		system_graphics_update();
 		oldKeys = keysHeld();
 
-		gfxFlushBuffers();
-		gfxSwapBuffers();
-		gspWaitForVBlank();
 	}
 
 	strcpy(rom_filename, rom_list[current_rom]);
 
 	system_debug_clear();
-	system_debug_print("Loading ROM ");
-	system_debug_println(rom_list[current_rom]);
+	system_debug_printf("Loading ROM %s\n", rom_list[current_rom]);
 
-	// Clear both buffers
-	clear_top();
-	clear_top();
-
+	/* free calloc'd memory */
+	for(i = 0; i < num_files; i++) {
+		free(rom_list[i]);
+	}
 }
 #endif
 
@@ -516,6 +479,7 @@ main(int argc, char *argv[])
 	state_restore(start_state);
 
     gettimeofday(&throttle_last, NULL);
+	current_display = NPDS_GAME;
 
     do {
 	if (paused == 0)
