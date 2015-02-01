@@ -249,7 +249,7 @@ void rom_menu(char *dir, char *rom_filename) {
 		keys = keysHeld();
 
 		if(keys != oldKeys && keys & KEY_UP) {
-			current_rom = (current_rom - 1) % nfiles;
+			current_rom = current_rom > 0 ? (current_rom - 1) % nfiles : nfiles - 1;
 		}
 
 		if(keys != oldKeys && keys & KEY_DOWN) {
@@ -268,7 +268,6 @@ void rom_menu(char *dir, char *rom_filename) {
 			bufAdr[i] = 0;
 
 		system_debug_clear();
-		char w[2] = {'a' + DEBUG_SCREEN_ROWS, 0x0};
 		system_debug_println("ROM LIST");
 
 		for(i = 0; rom_list[i][0] && i < MAX_ROMS; i++) {
