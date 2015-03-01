@@ -5,6 +5,7 @@
 *.3dsx
 *.elf
 *.smdh
+icon.png
 
 build/*
 disass/*

@@ -84,15 +84,21 @@ system_input_update(void)
 	}
 
 	if(keys & KEY_A) {
+		handle_event(NPEV_JOY_BUTTON_B, NPKS_DOWN);
+	} else {
+		handle_event(NPEV_JOY_BUTTON_B, NPKS_UP);
+	}
+
+	if(keys & KEY_B) {
 		handle_event(NPEV_JOY_BUTTON_A, NPKS_DOWN);
 	} else {
 		handle_event(NPEV_JOY_BUTTON_A, NPKS_UP);
 	}
 
-	if(keys & KEY_B) {
-		handle_event(NPEV_JOY_BUTTON_B, NPKS_DOWN);
+	if(keys & KEY_START) {
+		handle_event(NPEV_JOY_OPTION, NPKS_DOWN);
 	} else {
-		handle_event(NPEV_JOY_BUTTON_B, NPKS_UP);
+		handle_event(NPEV_JOY_OPTION, NPKS_UP);
 	}
 
 	if(keys & KEY_X) {

@@ -31,6 +31,9 @@ BUILD		:=	build
 SOURCES		:=	source Core Core/z80 Core/TLCS-900h
 DATA		:=	data
 INCLUDES	:=	include source Core Core/z80 Core/TLCS-900h
+APP_TITLE	:=	NeoPop-3DS
+APP_DESCRIPTION	:=	A Neo Geo Pocket Color Emulator
+APP_AUTHOR	:=	vaguilar
 
 #---------------------------------------------------------------------------------
 # options for code generation
