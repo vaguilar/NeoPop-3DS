@@ -243,6 +243,7 @@ extern const char *yuv_names[];
 #define DEBUG_SCREEN_ROWS (BOTTOM_SCREEN_HEIGHT / (CHAR_HEIGHT + 4))
 
 _u8 debug_buffer[DEBUG_SCREEN_ROWS][DEBUG_SCREEN_COLS + 1];
+_u8 update_debug_buffer;
 
 #define MAX_FILENAME_LENGTH 40
 #define MAX_ROMS 16

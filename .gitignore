@@ -1,4 +1,5 @@
 *.o
+*.gch
 *.sw?
 
 *.3dsx
@@ -6,3 +7,4 @@
 *.smdh
 
 build/*
+disass/*

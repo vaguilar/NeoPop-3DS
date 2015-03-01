@@ -34,6 +34,16 @@ int state_slot;
 
 Handle dir_handle;
 
+_u32
+strlen2 (u16 *str) {
+	_u32 length = 0;
+	while (*str) {
+		length++;
+		str++;
+	}
+	return length;
+}
+
 static BOOL
 read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
 {
@@ -122,7 +132,15 @@ read_dir_next(FS_dirent *dir_entry)
 		return FALSE;
 
 	_u32 nread = 0;
-	FSDIR_Read(dir_handle, &nread, 1, dir_entry);
+	_u32 hidden_file = 0;
+
+	do {
+		FSDIR_Read(dir_handle, &nread, 1, dir_entry);
+		hidden_file = 	nread &&
+						strlen2(dir_entry->name) > 3 &&
+						dir_entry->name[0] == '.' &&
+						dir_entry->name[1] == '_';
+	} while (hidden_file);
 
 	if (!nread)
 		return FALSE;

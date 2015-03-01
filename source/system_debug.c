@@ -7,7 +7,7 @@ _u16 col  = 0;
 void system_debug_print(char *msg)
 {
 	_u32 i;
-	for(i = 0; msg[i]; i++) {
+	for (i = 0; msg[i]; i++) {
 		
 		if (col >= DEBUG_SCREEN_COLS || msg[i] == '\n') {
 			col = 0;
@@ -24,6 +24,7 @@ void system_debug_print(char *msg)
 
 	}
 
+	update_debug_buffer = 1;
 }
 
 void system_debug_println(char *msg)

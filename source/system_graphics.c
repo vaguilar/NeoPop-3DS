@@ -318,14 +318,16 @@ system_graphics_update(void)
 		break;
 	}
 
-	frame_buffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &frame_width, &frame_height);
+	if (update_debug_buffer) {
+		frame_buffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &frame_width, &frame_height);
 
-	/* clear screen */
-	for (x = 0; x < frame_width * frame_height * 3; x++)
-		frame_buffer[x] = 0;
+		/* clear screen */
+		for (x = 0; x < frame_width * frame_height * 3; x++)
+			frame_buffer[x] = 0;
 
-	for (y = 0; y < DEBUG_SCREEN_ROWS; y++) {
-		drawString(frame_buffer, debug_buffer[y], 4, (y * (CHAR_HEIGHT + 4)) + 4, 0xffffffff);
+		for (y = 0; y < DEBUG_SCREEN_ROWS; y++) {
+			drawString(frame_buffer, debug_buffer[y], 4, (y * (CHAR_HEIGHT + 4)) + 4, 0xffffffff);
+		}
 	}
 
 	gfxFlushBuffers();

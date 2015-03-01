@@ -198,15 +198,10 @@ void rom_menu(char *dir, char *rom_filename)
 	/* read files into array */
 	while (read_dir_next(&dir_entry) && num_files < MAX_ROMS) {
 
-		_u16 length = 0;
-		_u16 *ptr = dir_entry.name;
-
 		/* the name string in FS_dirent uses 2 bytes per char, can't use strlen */
-		while (*ptr) {
-			length++;
-			ptr++;
-		}
+		_u32 length = strlen2(dir_entry.name);
 
+		/* make into c string */
 		rom_list[num_files] = calloc(length + 1, 1);
 
 		for(i = 0; dir_entry.name[i]; i++) {
@@ -231,6 +226,11 @@ void rom_menu(char *dir, char *rom_filename)
 
 		if(keys != oldKeys && keys & KEY_DOWN) {
 			current_rom = (current_rom + 1) % num_files;
+		}
+
+		if(keys != oldKeys && keys & KEY_X) {
+			do_exit = 1;
+			break;
 		}
 
 		if(keys != oldKeys && (keys & KEY_A || keys & KEY_START)) {
@@ -328,12 +328,10 @@ main(int argc, char *argv[])
        exit(1);
     }
     atexit(SDL_Quit);
-#endif
 
     system_bindings_init();
     system_rc_read();
 
-#ifndef _3DS
     while ((ch=getopt(argc, argv, "C:cef:ghjl:MmP:R:SsVy:")) != -1) {
 	switch (ch) {
 	case 'C':
@@ -412,10 +410,10 @@ main(int argc, char *argv[])
 	    usage(1);
 	}
     }
-	#endif
 
     argc -= optind;
     argv += optind;
+#endif
 
     /* Fill BIOS buffer */
     if (bios_install() == FALSE) {
@@ -428,7 +426,6 @@ main(int argc, char *argv[])
 	SDL_JoystickOpen(0);
 	SDL_JoystickEventState(SDL_ENABLE);
     }
-#endif
 
     if (system_graphics_init() == FALSE) {
 	//fprintf(stderr, "cannot create window: %s\n", SDL_GetError());
@@ -447,6 +444,7 @@ main(int argc, char *argv[])
     if (comms_mode != COMMS_NONE)
 	system_comms_connect();
 
+#endif
     /*
      * Throttle rate is number_of_ticks_per_second divided by number
      * of complete frames that should be shown per second.
@@ -454,8 +452,8 @@ main(int argc, char *argv[])
      */
     throttle_rate = 1000000/NGP_FPS;
 
-	char rom_filename[256] = "neogeo/";
-	rom_menu("/neogeo", &rom_filename[7]);
+	char rom_filename[256] = "/neogeo/";
+	rom_menu("/neogeo", &rom_filename[8]);
 
 	if (strlen(rom_filename) == 0) {
 		exit(0);
