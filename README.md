@@ -5,7 +5,7 @@ Nintendo 3DS port of the NeoPop emulator, based on NeoPop-SDL
 
 ## Setup
 
-To compile, you'll need to devkitARM:
+To compile, you'll need to install devkitARM:
     http://devkitpro.org/wiki/Getting_Started/devkitARM
 
 To run, you'll need a 3DS that can run homebrew or use an emulator:
