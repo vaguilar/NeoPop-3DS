@@ -288,27 +288,23 @@ system_graphics_update(void)
 #ifdef _3DS
 
 	_u16 frame_width, frame_height;
-	_u16* buffer = cfb;
-	_u8* frame_buffer = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
+	_u16 *neogeo_buffer = cfb;
+	_u16 *screen_buffer = (_u16*) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &frame_width, &frame_height);
 
 	switch(current_display) {
 	case NPDS_ROM_MENU:
 		break;
 
 	case NPDS_GAME:
-		for (y=0; y<SCREEN_HEIGHT; y++) {
-			for (x=0; x<SCREEN_WIDTH; x++) {
-
-				_u16 i = *(buffer++);
-				_u8  r = CONV4TO8(i&0xf);
-				_u8  g = CONV4TO8((i>>4)&0xf);
-				_u8  b = CONV4TO8(i>>8);
-
-				_u32 xx = x + 120 + 1, yy = y + 44 + 1;
-				_u32 v = ((xx * 240) - yy) * 3;
-				frame_buffer[v++] = b;
-				frame_buffer[v++] = g;
-				frame_buffer[v++] = r;
+		/* TODO: fix magic numbers */
+		for (y=45; y<SCREEN_HEIGHT + 45; y++) {
+			for (x=121; x<SCREEN_WIDTH + 121; x++) {
+				// NGP -- ABGR4
+				// 3DS -- RGBA4
+				_u16 i = *(neogeo_buffer++);
+				_u32 vv = ((x * 240) - y);
+				screen_buffer[vv] = i;
+				continue;
 			}
 		}
 
@@ -316,18 +312,6 @@ system_graphics_update(void)
 
 	default:
 		break;
-	}
-
-	if (update_debug_buffer) {
-		frame_buffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &frame_width, &frame_height);
-
-		/* clear screen */
-		for (x = 0; x < frame_width * frame_height * 3; x++)
-			frame_buffer[x] = 0;
-
-		for (y = 0; y < DEBUG_SCREEN_ROWS; y++) {
-			drawString(frame_buffer, debug_buffer[y], 4, (y * (CHAR_HEIGHT + 4)) + 4, 0xffffffff);
-		}
 	}
 
 	gfxFlushBuffers();

@@ -86,9 +86,9 @@ static void Plot(_u8 x, _u8* palette_ptr, _u16 pal_hi, _u8 index, _u8 depth)
 	else
 		data8 = palette_ptr[0 + index];
 
-	r = (data8 & 7) << 1;
-	g = (data8 & 7) << 5;
-	b = (data8 & 7) << 9;
+	r = (data8 & 7) << 13;
+	g = (data8 & 7) << 9;
+	b = (data8 & 7) << 5;
 
 	if (negative)
 		cfb_scanline[x] = (r | g | b);

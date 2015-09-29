@@ -37,6 +37,11 @@ int paused = 0;
 int have_sound;
 void readrc(void);
 
+struct PrintConsole print_console;
+#define CONSOLE_WIDTH 37
+#define CONSOLE_HEIGHT 30
+#define TICKS_PER_SEC 268123480
+
 static void
 usage(int exitcode)
 {
@@ -78,111 +83,40 @@ system_VBL(void)
 {
     static int frameskip_counter = 0;
     static int frame_counter = 0;
-    static long time_spent = 0;
-    static int last_sec = 0;
-    struct timeval current_time, time_diff;
-    long throttle_diff;
-    int newsec;
+    static _u64 total_frame_counter = 0;
+
+	static _u64 previous_ticks = 0;
+	static _u64 current_ticks = 0;
+	static float fps = 0;
+
+	current_ticks = svcGetSystemTick();
+	_u64 delta = current_ticks - previous_ticks;
+	if (delta > TICKS_PER_SEC) {
+		fps = total_frame_counter / (1.0 * delta / TICKS_PER_SEC);
+
+		consoleClear();
+		printf("%.2f fps\n", fps);
+		printf("frame skip: %d\n", system_frameskip_key - 1);
+		//printf("pattern table writes: %d\n", ptable_writes);
+
+		previous_ticks = current_ticks;
+		total_frame_counter = -1;
+	}
 
     system_input_update();
-    system_osd_display();
-
     if (++frameskip_counter >= system_frameskip_key) {
-	system_graphics_update();
-	frameskip_counter = 0;
+		system_graphics_update();
+		frameskip_counter = 0;
     }
 
-    newsec = 0;
-    gettimeofday(&current_time, NULL);
-    if (current_time.tv_sec != last_sec) {
-	newsec = 1;
-	last_sec = current_time.tv_sec;
-    }
+	total_frame_counter++;
 
-    if (have_sound) {
-	//timersub(&current_time, &throttle_last, &time_diff);
-	throttle_diff = (time_diff.tv_sec*1000000 + time_diff.tv_usec);
-
-	if (time_spent == 0)
-	    time_spent = throttle_diff;
-	else
-	    time_spent = (time_spent*9 + throttle_diff) / 10;
-
-#if 0
-	printf("%4ld", time_spent*10/throttle_rate), fflush(stdout);
-	printf("time spent: %ld.%06ld, frames spent: %ld\n",
-	       time_diff.tv_sec, time_diff.tv_usec, frames_spent);
-#endif
-
-	system_sound_update(time_spent/throttle_rate + 1);
-
-	/* XXX: we should include the time spent calculating samples */
-	gettimeofday(&current_time, NULL);
-	throttle_last = current_time;
-    }
-    else {
-	throttle_last.tv_usec += throttle_rate;
-	if (throttle_last.tv_usec > 1000000) {
-	    throttle_last.tv_usec -= 1000000;
-	    throttle_last.tv_sec++;
-	}
-	//timersub(&throttle_last, &current_time, &time_diff);
-	throttle_diff = (time_diff.tv_sec*1000000 + time_diff.tv_usec);
-	
-	if (throttle_diff > 0) {
-	    //SDL_Delay(throttle_diff/1000);
-	}
-	else if (throttle_diff < -2*throttle_rate) {
-	    time_diff.tv_sec = 0;
-	    time_diff.tv_usec = -2*throttle_rate;
-	    //timersub(&current_time, &time_diff, &throttle_last);
-	}
-    }
-
-    frame_counter++;
-    if (newsec) {
-	char title[128];
-
-	/* set window caption */
-	if (graphics_mag_req > 1)
-	    (void)snprintf(title, sizeof(title),
-			   PROGRAM_NAME " - %s - %dfps/FS%d",
-			   rom.name, frame_counter, system_frameskip_key);
-	else
-	    (void)snprintf(title, sizeof(title), PROGRAM_NAME " %dfps",
-			   frame_counter);
-	//SDL_WM_SetCaption(title, NULL);
-
-	frame_counter = 0;
-    }
+	//system_sound_update(time_spent/throttle_rate + 1);
 
     return;
 }
 
 #ifdef _3DS
-void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, _u32 color)
-{
-    const float max = 255;
-    _u16 fbWidth, fbHeight;
-    _u8* fbAdr = gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
-
-    union{ _u32 color; struct{ _u8 a, b, g, r; } rgba; } rgbaColor;
-    rgbaColor.color = color;
-
-    int i;
-    for (i = 0; i<fbWidth*fbHeight; i++)
-    {
-        _u8 rgb_prev[] = { *(fbAdr), *(fbAdr + 1), *(fbAdr + 2) };
-        *(fbAdr++) = (_u8)(rgbaColor.rgba.b * (rgbaColor.rgba.a / max) + rgb_prev[0] * ((max - rgbaColor.rgba.a) / max));
-        *(fbAdr++) = (_u8)(rgbaColor.rgba.g * (rgbaColor.rgba.a / max) + rgb_prev[1] * ((max - rgbaColor.rgba.a) / max));
-        *(fbAdr++) = (_u8)(rgbaColor.rgba.r * (rgbaColor.rgba.a / max) + rgb_prev[2] * ((max - rgbaColor.rgba.a) / max));
-    }
-
-	gfxFlushBuffers();
-	gfxSwapBuffers();
-	gspWaitForVBlank();
-}
-
 void rom_menu(char *dir, char *rom_filename)
 {
 	_u32 i				= 0;
@@ -197,26 +131,22 @@ void rom_menu(char *dir, char *rom_filename)
 
 	/* read files into array */
 	while (read_dir_next(&dir_entry) && num_files < MAX_ROMS) {
-
-		/* the name string in FS_dirent uses 2 bytes per char, can't use strlen */
+		/* the name string in FS_dirent uses 2 bytes per char, can't use normal strlen */
 		_u32 length = strlen2(dir_entry.name);
 
 		/* make into c string */
 		rom_list[num_files] = calloc(length + 1, 1);
-
 		for(i = 0; dir_entry.name[i]; i++) {
 			rom_list[num_files][i] = dir_entry.name[i];
 		}
 
 		num_files++;
-
 	}
 
 	read_dir_close();
 
 	/* TODO move input stuff to system_input.c */
 	while (1) {
-
 		hidScanInput();
 		keys = keysHeld();
 
@@ -228,38 +158,33 @@ void rom_menu(char *dir, char *rom_filename)
 			current_rom = (current_rom + 1) % num_files;
 		}
 
-		if(keys != oldKeys && keys & KEY_X) {
-			do_exit = 1;
-			break;
-		}
+		if(keys != oldKeys && keys & KEY_X) break;
 
-		if(keys != oldKeys && (keys & KEY_A || keys & KEY_START)) {
-			break;
-		}
+		if(keys != oldKeys && (keys & KEY_B || keys & KEY_START)) break;
 
-		system_debug_clear();
-		system_debug_println("ROM LIST");
+		consoleClear();
+		printf("ROM LIST\n");
 
 		for(i = 0; i < num_files; i++) {
-
 			if (current_rom == i)
-				system_debug_print(" > ");
+				printf(" > ");
 			else
-				system_debug_print("   ");
+				printf("   ");
 
-			system_debug_println(rom_list[i]);
-
+			if (strlen(rom_list[i]) == CONSOLE_WIDTH - 3)
+				printf("%s", rom_list[i]);
+			else
+				printf("%s\n", rom_list[i]);
 		}
 
 		system_graphics_update();
 		oldKeys = keysHeld();
-
 	}
 
 	strcpy(rom_filename, rom_list[current_rom]);
 
-	system_debug_clear();
-	system_debug_printf("Loading ROM %s\n", rom_list[current_rom]);
+	consoleClear();
+	printf("Loading ROM %s...\n", rom_list[current_rom]);
 
 	/* free calloc'd memory */
 	for(i = 0; i < num_files; i++) {
@@ -282,9 +207,13 @@ main(int argc, char *argv[])
 #ifdef _3DS
 	srvInit(); // Needed
 	aptInit(); // Needed
-	gfxInitDefault(); // Init graphic stuff
+	//gfxInitDefault(); // Init graphic stuff
+	gfxInit(GSP_RGBA4_OES, GSP_RGBA4_OES, false); // RGBA4 closer to Neo Geo's ABGR4 format
 	fsInit();  // Filesystem
 	hidInit(NULL);
+
+	consoleInit(GFX_BOTTOM, &print_console);
+	consoleSetWindow(&print_console, 1, 1, CONSOLE_WIDTH, CONSOLE_HEIGHT);
 #endif
 
     prg = argv[0];

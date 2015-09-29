@@ -15,8 +15,9 @@ To run, you'll need a 3DS that can run homebrew or use an emulator:
 
 * A: B
 * B: A
-* Option: Start
-* Joy Stick: Both Analaog Stick and D-Pad
+* Start: Option
+* Analaog Stick and D-Pad: Joystick
+* L/R to change frame skip
 * X to exit
 
 Roms (unzipped) go in a folder called "neogeo" in the root of your SD card.

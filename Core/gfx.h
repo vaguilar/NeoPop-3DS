@@ -49,6 +49,9 @@
 #define ZDEPTH_FOREGROUND_SCROLL	5
 #define ZDEPTH_FRONT_SPRITE			6
 
+// ABGR -> RGBA, dropping A since not used
+#define bgr2rgb(i)	((i & 0x000f) << 12) | ((i & 0x00f0) << 4) | ((i & 0x0f00) >> 4)
+
 //=============================================================================
 
 //---------------------------

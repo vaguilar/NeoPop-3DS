@@ -57,6 +57,7 @@ system_input_update(void)
 	/* FIXME probably a better way to do this */
 
 	hidScanInput();
+	static _u32 old_keys = 0;
 	_u32 keys = keysHeld();
 
 	if(keys & KEY_UP) {
@@ -101,9 +102,19 @@ system_input_update(void)
 		handle_event(NPEV_JOY_OPTION, NPKS_UP);
 	}
 
+	if(keys & KEY_L && system_frameskip_key > 1 && keys != old_keys) {
+		system_frameskip_key--;
+	}
+
+	if(keys & KEY_R && system_frameskip_key < 6 && keys != old_keys) {
+		system_frameskip_key++;
+	}
+
 	if(keys & KEY_X) {
 		do_exit = 1;
 	}
+
+	old_keys = keys;
 
 #else
 

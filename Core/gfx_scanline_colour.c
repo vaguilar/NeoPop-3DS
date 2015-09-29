@@ -143,6 +143,7 @@ static void drawPattern(_u8 screenx, _u16 tile, _u8 tiley, _u16 mirror,
 
 		//Get the colour of the pixel
 		data16 = le16toh(palette_ptr[index&3]);
+		data16 = bgr2rgb(data16);
 		
 		if (negative)
 			cfb_scanline[xx] = ~data16;
@@ -207,6 +208,7 @@ void gfx_draw_scanline_colour(void)
 
 	//Window colour
 	data16 = le16toh(*(_u16*)(ram + 0x83F0 + (oowc << 1)));
+	data16 = bgr2rgb(data16);
 	if (negative) data16 = ~data16;
 
 	//Top
@@ -240,6 +242,7 @@ void gfx_draw_scanline_colour(void)
 	//	if ((bgc & 0xC0) == 0x80)
 		{
 			data16 = le16toh(*(_u16*)(_u8*)(ram + 0x83E0 + ((bgc & 7) << 1)));
+			data16 = bgr2rgb(data16);
 		}
 	//	else data16 = 0;
 
