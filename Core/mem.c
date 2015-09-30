@@ -369,6 +369,14 @@ void storeW(_u32 address, _u16 data)
 	{
 		*ptr = htole16(data);
 		post_write(address);
+
+		/* translate palette to RGBA */
+		if (address >= 0x8200 && address < 0x8280)
+			translated_sprite_palette[(address - 0x8200) / 2] = bgr2rgb(data);
+		else if (address >= 0x8280 && address < 0x8300)
+			translated_fplane_palette[(address - 0x8280) / 2] = bgr2rgb(data);
+		else if (address >= 0x8300 && address < 0x8380)
+			translated_bplane_palette[(address - 0x8300) / 2] = bgr2rgb(data);
 	}
 }
 

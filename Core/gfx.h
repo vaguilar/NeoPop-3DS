@@ -60,6 +60,9 @@
 
 extern _u8 zbuffer[256];	//Line z-buffer
 extern _u16* cfb_scanline;	//set = cfb + (scanline * SCREEN_WIDTH)
+extern _u16 translated_sprite_palette[0x180];
+extern _u16 translated_fplane_palette[0x180];
+extern _u16 translated_bplane_palette[0x180];
 
 extern _u8 scanline;		//Current scanline
 
