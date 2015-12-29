@@ -124,14 +124,14 @@ void rom_menu(char *dir, char *rom_filename)
 	_u32 oldKeys 		= 0;
 	_u16 current_rom 	= 0;
 	_u16 num_files		= 0;
-	FS_dirent dir_entry;
+	FS_DirectoryEntry dir_entry;
 
 	current_display = NPDS_ROM_MENU;
 	read_dir_open(dir);
 
 	/* read files into array */
 	while (read_dir_next(&dir_entry) && num_files < MAX_ROMS) {
-		/* the name string in FS_dirent uses 2 bytes per char, can't use normal strlen */
+		/* the name string in FS_DirectoryEntry uses 2 bytes per char, can't use normal strlen */
 		_u32 length = strlen2(dir_entry.name);
 
 		/* make into c string */
@@ -210,7 +210,7 @@ main(int argc, char *argv[])
 	//gfxInitDefault(); // Init graphic stuff
 	gfxInit(GSP_RGBA4_OES, GSP_RGBA4_OES, false); // RGBA4 closer to Neo Geo's ABGR4 format
 	fsInit();  // Filesystem
-	hidInit(NULL);
+	hidInit();
 
 	consoleInit(GFX_BOTTOM, &print_console);
 	consoleSetWindow(&print_console, 1, 1, CONSOLE_WIDTH, CONSOLE_HEIGHT);

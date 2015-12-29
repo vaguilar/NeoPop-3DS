@@ -52,13 +52,13 @@ read_file_to_buffer(char *filename, _u8 *buffer, _u32 len)
     Handle fileHandle;
 
     //setup SDMC archive
-    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
+    FS_Archive sdmcArchive=(FS_Archive){ARCHIVE_SDMC, (FS_Path){PATH_EMPTY, 1, (_u8*)""}};
 
-    //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
-    FS_path filePath=FS_makePath(PATH_CHAR, filename);
+    //create file path struct
+    FS_Path filePath=fsMakePath(PATH_ASCII, filename);
 
     //open file
-    Result ret=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+    Result ret=FSUSER_OpenFileDirectly(&fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_ARCHIVE);
     //check for errors : exit if there is one
     if(ret)goto exit;
 
@@ -88,11 +88,11 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 	_u32 byteswritten = 0;
 
 	//setup SDMC archive
-	FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
+	FS_Archive sdmcArchive=(FS_Archive){ARCHIVE_SDMC, (FS_Path){PATH_EMPTY, 1, (_u8*)""}};
 
-	FS_path filePath = FS_makePath(PATH_CHAR, filename);
+	FS_Path filePath = fsMakePath(PATH_ASCII, filename);
 
-	Result ret = FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_CREATE|FS_OPEN_WRITE, FS_ATTRIBUTE_NONE);
+	Result ret = FSUSER_OpenFileDirectly(&fileHandle, sdmcArchive, filePath, FS_OPEN_CREATE|FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
 	if (ret) goto exit;
 
 	ret = FSFILE_SetSize(fileHandle, (_u64)len);
@@ -114,19 +114,19 @@ write_file_from_buffer(char *filename, _u8 *buffer, _u32 len)
 BOOL
 read_dir_open(char *dir_name)
 {
-	FS_archive sdmcArchive = (FS_archive) {ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
-	FSUSER_OpenArchive(NULL, &sdmcArchive);
+	FS_Archive sdmcArchive = (FS_Archive) {ARCHIVE_SDMC, (FS_Path){PATH_EMPTY, 1, (_u8*)""}};
+	FSUSER_OpenArchive(&sdmcArchive);
 
-	FS_path dir_path = (FS_path){PATH_CHAR, strlen(dir_name) + 1, dir_name};
+	FS_Path dir_path = (FS_Path){PATH_ASCII, strlen(dir_name) + 1, dir_name};
 
-	if (FSUSER_OpenDirectory(NULL, &dir_handle, sdmcArchive, dir_path))
+	if (FSUSER_OpenDirectory(&dir_handle, sdmcArchive, dir_path))
 		return FALSE;
 
 	return TRUE;
 }
 
 BOOL
-read_dir_next(FS_dirent *dir_entry)
+read_dir_next(FS_DirectoryEntry *dir_entry)
 {
 	if (!dir_handle)
 		return FALSE;
@@ -166,12 +166,12 @@ get_file_size(char *filename) {
     Handle fileHandle;
 
     //setup SDMC archive
-    FS_archive sdmcArchive=(FS_archive){ARCH_SDMC, (FS_path){PATH_EMPTY, 1, (_u8*)""}};
-    //create file path struct (note : FS_makePath actually only supports PATH_CHAR, it will change in the future)
-    FS_path filePath=FS_makePath(PATH_CHAR, filename);
+    FS_Archive sdmcArchive=(FS_Archive){ARCHIVE_SDMC, (FS_Path){PATH_EMPTY, 1, (_u8*)""}};
+    //create file path struct
+    FS_Path filePath=fsMakePath(PATH_ASCII, filename);
 
     //open file
-    Result ret=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+    Result ret=FSUSER_OpenFileDirectly(&fileHandle, sdmcArchive, filePath, FS_OPEN_READ, FS_ATTRIBUTE_ARCHIVE);
     //check for errors : exit if there is one
     if(ret)goto exit;
 

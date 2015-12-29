@@ -16,7 +16,7 @@ To run, you'll need a 3DS that can run homebrew or use an emulator:
 * A: B
 * B: A
 * Start: Option
-* Analaog Stick and D-Pad: Joystick
+* Analog Stick and D-Pad: Joystick
 * L/R to change frame skip
 * X to exit
 
